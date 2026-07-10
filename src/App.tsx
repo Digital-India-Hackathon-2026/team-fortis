@@ -11,7 +11,7 @@ import {
   Filter, Plus, UserPlus, FileEdit, HelpCircle, Phone, Mail, Check,
   Camera, ArrowRight, Activity, Trash2, CheckCircle, Mic, MicOff,
   Volume2, VolumeX, Sparkles, X, MessageSquare, Settings, Compass,
-  Star, Download, Share2, Award, ListFilter, AlertCircle, Eye, EyeOff
+  Star, Download, Share2, Award, ListFilter, AlertCircle, Eye, EyeOff, ChevronLeft
 } from 'lucide-react';
 import { 
   User, Department, Complaint, ComplaintStatus, 
@@ -1824,10 +1824,10 @@ export default function App() {
               {currentUser && (
                 <button 
                   onClick={() => setActiveView('dashboard')}
-                  className="bg-[#EEF8E8] hover:bg-[#EEF8E8]/80 text-[#437132] p-2 rounded-xl transition cursor-pointer flex items-center justify-center border border-[#C3E39D] shadow-sm mr-1"
+                  className="w-10 h-10 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 transition-all shadow-sm cursor-pointer mr-1"
                   title="Back to Dashboard"
                 >
-                  <ArrowRight className="w-4 h-4 rotate-180 text-[#569140]" />
+                  <ChevronLeft className="w-5 h-5 text-slate-600" />
                 </button>
               )}
               <img src={logo} alt="CivicAI Logo" className="h-12 w-12 object-contain" />
@@ -2020,6 +2020,15 @@ export default function App() {
               
               {/* Left Column: Mission branding values (55% Width) */}
               <div className="lg:w-[55%] bg-gradient-to-b from-[#4F8A45] to-[#437132] text-white p-8 sm:p-12 flex flex-col justify-between relative overflow-hidden shrink-0">
+                
+                {/* Circular Back Button on Login Page */}
+                <button 
+                  onClick={() => setActiveView('landing')}
+                  className="absolute left-6 top-6 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white transition-all shadow-md z-20 cursor-pointer"
+                  title="Back to Home"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
                 
                 {/* Hyderabad skyline watermark (opacity 5-10%) */}
                 <svg className="absolute bottom-0 left-0 w-full h-40 opacity-[0.08] pointer-events-none select-none" viewBox="0 0 800 200" fill="currentColor">
