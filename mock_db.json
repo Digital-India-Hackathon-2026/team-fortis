@@ -51,6 +51,16 @@
       "role": "CITIZEN",
       "createdAt": "2026-07-10T11:25:23.965Z",
       "updatedAt": "2026-07-10T11:25:23.965Z"
+    },
+    {
+      "id": "ltzgcr5is8mreutlv7",
+      "name": "Vikram Singh",
+      "username": "vikram_singh_1783683029396",
+      "phone": "+916139671316",
+      "passwordHash": "$2b$10$jOV5h2LqQw695FAhr1KgVezZLWPBaFtU9tC1lcgGKKfiefSJbCf4.",
+      "role": "CITIZEN",
+      "createdAt": "2026-07-10T11:30:29.491Z",
+      "updatedAt": "2026-07-10T11:30:29.491Z"
     }
   ],
   "departments": [

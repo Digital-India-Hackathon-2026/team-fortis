@@ -2078,36 +2078,39 @@ export default function App() {
         <div className="min-h-screen w-full flex flex-col justify-between bg-[#FCFDFB] animate-fade-in">
           
           {/* Top Seal Header */}
-          <div className="bg-slate-950 text-white py-2.5 px-6 border-b border-slate-800 text-[10px] flex justify-between items-center shrink-0">
-            <div className="flex items-center space-x-2">
-              <span className="font-bold text-amber-500">{t("auth.govHeader.state")}</span>
-              <span className="text-slate-700">|</span>
-              <span>{t("auth.govHeader.grid")}</span>
+          <div className="bg-[#FFFFFF] border-b border-[#E5E7EB] py-3 px-6 text-[11px] flex justify-between items-center shrink-0 shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <img src={logo} alt="Government Emblem" className="h-5 w-5 object-contain" />
+              <div className="flex items-center space-x-2 text-slate-700 font-semibold tracking-wide">
+                <span>Government of Telangana</span>
+                <span className="text-slate-300">|</span>
+                <span className="text-slate-500 font-medium">Unified Municipal Grievance Portal</span>
+              </div>
             </div>
             <div className="flex items-center gap-4 animate-fade-in">
               {/* Language Selector on Login view */}
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value as any)}
-                className="border border-slate-850 rounded px-2 py-0.5 text-[10px] font-semibold focus:outline-none cursor-pointer"
-                style={{ backgroundColor: '#ffffff', color: '#0f172a' }}
+                className="border border-[#E5E7EB] rounded-lg px-2.5 py-1 text-xs font-semibold focus:outline-none cursor-pointer"
+                style={{ backgroundColor: '#ffffff', color: '#4F8A46', borderColor: '#E5E7EB' }}
               >
-                <option value="en" style={{ backgroundColor: '#ffffff', color: '#0f172a' }}>English (ENG)</option>
-                <option value="hi" style={{ backgroundColor: '#ffffff', color: '#0f172a' }}>हिंदी (HIN)</option>
-                <option value="te" style={{ backgroundColor: '#ffffff', color: '#0f172a' }}>తెలుగు (TEL)</option>
+                <option value="en">English (ENG)</option>
+                <option value="hi">हिंदी (HIN)</option>
+                <option value="te">తెలుగు (TEL)</option>
               </select>
               
               {currentUser && (
                 <button 
                   onClick={() => setActiveView('dashboard')}
-                  className="text-white hover:text-[#6FB555] font-bold cursor-pointer text-[10px] uppercase transition-colors"
+                  className="text-[#4F8A46] hover:text-[#3d6c37] font-bold cursor-pointer text-xs uppercase transition-colors"
                 >
                   {t("landing.btn.dashboard")}
                 </button>
               )}
               <button 
                 onClick={() => setActiveView('landing')} 
-                className="text-[#6FB555] hover:text-[#569140] font-bold cursor-pointer text-[10px] uppercase transition-colors"
+                className="text-[#4F8A46] hover:text-[#3d6c37] font-bold cursor-pointer text-xs uppercase transition-colors"
               >
                 {t("auth.govHeader.back")}
               </button>
