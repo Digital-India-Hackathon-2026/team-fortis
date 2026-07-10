@@ -7,10 +7,12 @@ export class GeminiService {
    * Analyzes a complaint image using Gemini 2.5 Flash Vision.
    * @param {string} apiKey - The Gemini API key to use for this call.
    * @param {string|Buffer} imageInput - Base64 string (data URL or raw) or Buffer.
+   * @param {string|Buffer} imageInput - Base64 string (data URL or raw) or Buffer.
    * @param {string} [mimeType='image/jpeg'] - The image mime type.
+   * @param {string} [modelName=null] - The model name to override the default.
    * @returns {Promise<object>} The validated structured JSON response.
    */
-  static async analyzeImage(apiKey, imageInput, mimeType = 'image/jpeg') {
+  static async analyzeImage(apiKey, imageInput, mimeType = 'image/jpeg', modelName = null) {
     if (!apiKey) {
       throw new Error('API key is required for Gemini service call');
     }
@@ -37,9 +39,9 @@ export class GeminiService {
     }
 
     const ai = new GoogleGenAI({ apiKey });
-    const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    const model = modelName || process.env.GEMINI_MODEL || 'gemini-3.5-flash';
 
-    const response = await ai.models.generateContent({
+    const apiCallPromise = ai.models.generateContent({
       model: model,
       contents: [
         {
@@ -51,6 +53,12 @@ export class GeminiService {
         GEMINI_CIVIC_PROMPT
       ]
     });
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Request Timeout')), 60000)
+    );
+
+    const response = await Promise.race([apiCallPromise, timeoutPromise]);
 
     const text = response.text;
     if (!text) {

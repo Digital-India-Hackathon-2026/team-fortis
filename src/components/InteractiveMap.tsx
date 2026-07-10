@@ -295,143 +295,16 @@ export default function InteractiveMap({
   const handleZoomOut = () => mapInstanceRef.current?.zoomOut();
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl flex flex-col lg:flex-row h-full">
-      
-      {/* MAP CONTROLS & FILTER RAIL */}
-      <div className="w-full lg:w-[20%] bg-slate-950 p-5 border-b lg:border-b-0 lg:border-r border-slate-800 flex flex-col justify-between space-y-5 shrink-0">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] uppercase tracking-widest text-amber-400 font-extrabold flex items-center gap-1.5">
-              <Compass className="w-4 h-4 animate-spin-slow text-amber-500" />
-              Telangana State Leaflet GIS
-            </span>
-            <span className="bg-slate-800 text-slate-300 text-[9px] font-bold px-2 py-0.5 rounded uppercase">
-              {interactiveMode === 'pin' ? 'Pin Location' : 'Live Feeds'}
-            </span>
-          </div>
-
-          <div>
-            <h3 className="text-white font-extrabold text-sm">
-              {interactiveMode === 'pin' ? 'Set Grievance GPS Coordinate' : 'Civic Grievance Interactive Atlas'}
-            </h3>
-            <p className="text-[11px] text-slate-400 mt-1">
-              {interactiveMode === 'pin' 
-                ? 'Toggle your region, then click anywhere on the tile map canvas to map a precise GPS coordinate.'
-                : 'Browse municipal grievance clusters across urban and rural Telangana districts.'}
-            </p>
-          </div>
-
-          {/* View Toggles */}
-          <div className="grid grid-cols-2 gap-1.5 bg-slate-900/80 p-1 rounded-lg border border-slate-800">
-            <button
-              onClick={() => setMapView('telangana')}
-              className={`py-1.5 text-center rounded text-xs font-bold transition-all cursor-pointer ${
-                mapView === 'telangana' 
-                  ? 'bg-amber-500 text-slate-950 shadow-sm font-extrabold' 
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Telangana State
-            </button>
-            <button
-              onClick={() => setMapView('hyderabad')}
-              className={`py-1.5 text-center rounded text-xs font-bold transition-all cursor-pointer ${
-                mapView === 'hyderabad' 
-                  ? 'bg-amber-500 text-slate-950 shadow-sm font-extrabold' 
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Hyderabad (GHMC)
-            </button>
-          </div>
-
-          {interactiveMode === 'view' && (
-            <div className="space-y-3 pt-2">
-              {/* Search Inside Map */}
-              <div className="relative">
-                <Search className="absolute left-3 top-2.5 text-slate-500 w-3.5 h-3.5" />
-                <input 
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search map markers..."
-                  className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500"
-                />
-                {searchQuery && (
-                  <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-2 text-slate-400 hover:text-white">
-                    <X className="w-3 h-3" />
-                  </button>
-                )}
-              </div>
-
-              {/* Category Dropdown */}
-              <div>
-                <label className="block text-[9px] uppercase tracking-wider font-extrabold text-slate-400 mb-1">Grievance Category</label>
-                <select 
-                  value={catFilter}
-                  onChange={(e) => setCatFilter(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 text-slate-300 rounded-lg p-2 text-xs focus:outline-none focus:border-amber-500 font-semibold"
-                >
-                  <option value="All">All Categories</option>
-                  <option value="Road Infrastructure">Road Infrastructure</option>
-                  <option value="Solid Waste & Sanitation">Solid Waste & Sanitation</option>
-                  <option value="Water Supply & Sewerage">Water Supply & Sewerage</option>
-                  <option value="Electricity & Streetlights">Electricity & Streetlights</option>
-                </select>
-              </div>
-
-              {/* Status Dropdown */}
-              <div>
-                <label className="block text-[9px] uppercase tracking-wider font-extrabold text-slate-400 mb-1">Workflow Status</label>
-                <select 
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 text-slate-300 rounded-lg p-2 text-xs focus:outline-none focus:border-amber-500 font-semibold"
-                >
-                  <option value="All">All Statuses</option>
-                  <option value="Pending">Pending Validation</option>
-                  <option value="Verified">Verified Issues</option>
-                  <option value="In Progress">In Progress (SLA)</option>
-                  <option value="Resolved">Resolved / Closed</option>
-                  <option value="Rejected">Rejected / False Alarm</option>
-                </select>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Dynamic map statistics / information summary */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 space-y-2 mt-4">
-          <div className="flex items-center gap-1.5 text-slate-400 text-[10px] uppercase font-bold tracking-wider">
-            <Activity className="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
-            Live Map Metrics
-          </div>
-          <div className="grid grid-cols-2 gap-2 pt-1 text-center">
-            <div className="bg-slate-950/80 p-2 rounded border border-slate-800">
-              <p className="text-[10px] text-slate-500 font-bold uppercase">Displayed</p>
-              <p className="text-lg font-black text-amber-500">{plottedComplaints.length}</p>
-            </div>
-            <div className="bg-slate-950/80 p-2 rounded border border-slate-800">
-              <p className="text-[10px] text-slate-500 font-bold uppercase">Resolved</p>
-              <p className="text-lg font-black text-emerald-500">
-                {plottedComplaints.filter(c => c.status === 'Resolved').length}
-              </p>
-            </div>
-          </div>
-          {interactiveMode === 'pin' && (
-            <div className="text-[10px] font-semibold text-amber-500/90 leading-relaxed pt-1 flex items-start gap-1">
-              <Info className="w-3.5 h-3.5 shrink-0 text-amber-500 mt-0.5" />
-              <span>Click on the map on the right to resolve coordinates and lock location.</span>
-            </div>
-          )}
-        </div>
-      </div>
-
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl flex flex-col h-full w-full">
       {/* MAP CANVAS PANEL */}
-      <div className="w-full lg:w-[80%] relative flex flex-col justify-between bg-slate-950 min-h-[400px]">
+      <div className="w-full relative flex flex-col justify-between bg-slate-950 h-full min-h-[400px]">
         
         {/* State Information Header Overlay */}
         <div className="absolute top-4 left-4 z-[400] flex flex-wrap gap-2 pointer-events-none">
+          <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800 px-3 py-1.5 rounded-full text-[10px] text-white font-extrabold flex items-center gap-1.5 shadow-lg select-none">
+            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse border border-emerald-400"></span>
+            <span className="text-emerald-400 tracking-wider">LIVE MAP</span>
+          </div>
           <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800 px-3 py-1.5 rounded-full text-[10px] text-white font-extrabold flex items-center gap-1.5 shadow-lg">
             <Layers className="w-3.5 h-3.5 text-amber-500" />
             <span>Leaflet Maps Vector Core</span>

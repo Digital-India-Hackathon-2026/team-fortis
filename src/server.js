@@ -26,3 +26,21 @@ const gracefulShutdown = async (signal) => {
 
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+import http from 'http';
+
+// Keep-Alive Self-Ping Job
+const PING_INTERVAL = 14 * 60 * 1000; // 14 minutes
+const APP_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+
+setInterval(() => {
+  if (APP_URL.includes('localhost') || APP_URL.includes('127.0.0.1')) return; // Don't self-ping on localhost
+  
+  logger.info(`[Keep-Alive]: Pinging server at ${APP_URL} to prevent sleep...`);
+  
+  http.get(`${APP_URL}/health`, (res) => {
+    logger.info(`[Keep-Alive]: Ping response status: ${res.statusCode}`);
+  }).on('error', (err) => {
+    logger.error('[Keep-Alive]: Ping failed:', err.message);
+  });
+}, PING_INTERVAL);

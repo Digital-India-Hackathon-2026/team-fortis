@@ -20,6 +20,7 @@ export class ComplaintController {
         departmentId: req.query.departmentId,
         search: req.query.search,
         officerId: req.query.officerId,
+        userId: req.query.userId,
       };
 
       const pagination = {

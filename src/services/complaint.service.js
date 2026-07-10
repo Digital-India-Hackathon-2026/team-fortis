@@ -2,8 +2,10 @@ import { prisma } from '../config/database.js';
 import { NotFoundError, BadRequestError } from '../utils/apiError.js';
 const ComplaintStatus = {
   PENDING: 'PENDING',
+  VERIFIED: 'VERIFIED',
   IN_PROGRESS: 'IN_PROGRESS',
   RESOLVED: 'RESOLVED',
+  VALIDATED: 'VALIDATED',
   REJECTED: 'REJECTED',
 };
 
@@ -21,8 +23,23 @@ export class ComplaintService {
       throw new BadRequestError('Reporter User not found');
     }
 
-    if (data.departmentId) {
-      const dept = await prisma.department.findUnique({ where: { id: data.departmentId } });
+    // Auto-resolve departmentId based on name, category, or title keywords
+    let resolvedDepartmentId = data.departmentId || null;
+    if (!resolvedDepartmentId) {
+      const matchSource = `${data.departmentName || ''} ${data.category || ''} ${data.title || ''}`.toLowerCase();
+      if (matchSource.includes('road') || matchSource.includes('pothole') || matchSource.includes('infra')) {
+        resolvedDepartmentId = 'dept-roads';
+      } else if (matchSource.includes('sanitat') || matchSource.includes('garbage') || matchSource.includes('waste') || matchSource.includes('litter')) {
+        resolvedDepartmentId = 'dept-sanitation';
+      } else if (matchSource.includes('water') || matchSource.includes('sewer') || matchSource.includes('drain') || matchSource.includes('leak')) {
+        resolvedDepartmentId = 'dept-water';
+      } else if (matchSource.includes('electr') || matchSource.includes('power') || matchSource.includes('wire') || matchSource.includes('current') || matchSource.includes('light')) {
+        resolvedDepartmentId = 'dept-electricity';
+      }
+    }
+
+    if (resolvedDepartmentId) {
+      const dept = await prisma.department.findUnique({ where: { id: resolvedDepartmentId } });
       if (!dept) {
         throw new BadRequestError('Department not found');
       }
@@ -38,14 +55,23 @@ export class ComplaintService {
           longitude: data.longitude,
           address: data.address,
           userId: data.userId,
-          departmentId: data.departmentId || null,
+          departmentId: resolvedDepartmentId,
           status: ComplaintStatus.PENDING,
         },
       });
 
+      // Handle image URLs from both list and single-field sources
+      const imageList = [];
       if (data.images && data.images.length > 0) {
+        imageList.push(...data.images);
+      }
+      if (data.imageUrl) {
+        imageList.push(data.imageUrl);
+      }
+
+      if (imageList.length > 0) {
         await tx.image.createMany({
-          data: data.images.map((url) => ({
+          data: imageList.map((url) => ({
             url,
             complaintId: complaint.id,
           })),
@@ -92,6 +118,9 @@ export class ComplaintService {
     }
     if (filters.officerId) {
       whereClause.officerId = filters.officerId;
+    }
+    if (filters.userId) {
+      whereClause.userId = filters.userId;
     }
     if (filters.search) {
       whereClause.OR = [

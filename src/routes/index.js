@@ -5,6 +5,7 @@ import departmentRoutes from './department.routes.js';
 import officerRoutes from './officer.routes.js';
 import analyticsRoutes from './analytics.routes.js';
 import searchRoutes from './search.routes.js';
+import aiRoutes from './ai.routes.js';
 
 const router = Router();
 
@@ -14,5 +15,6 @@ router.use('/departments', departmentRoutes);
 router.use('/officers', officerRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/search', searchRoutes);
+router.use('/ai', aiRoutes);
 
 export default router;

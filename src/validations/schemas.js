@@ -21,7 +21,7 @@ export const createOfficerSchema = z.object({
     name: z.string().min(2, 'Officer name must be at least 2 characters'),
     username: z.string().min(3, 'Username must be at least 3 characters'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
-    departmentId: z.string().uuid('Invalid department ID'),
+    departmentId: z.string().min(1, 'Invalid department ID'),
     role: z.enum(['OFFICER', 'DEPT_HEAD']).optional(),
   }),
 });
@@ -29,7 +29,7 @@ export const createOfficerSchema = z.object({
 export const updateOfficerSchema = z.object({
   body: z.object({
     name: z.string().min(2).optional(),
-    departmentId: z.string().uuid().optional(),
+    departmentId: z.string().optional(),
     role: z.enum(['OFFICER', 'DEPT_HEAD']).optional(),
     status: z.enum(['ACTIVE', 'SUSPENDED']).optional(),
   }),
@@ -44,15 +44,17 @@ export const createComplaintSchema = z.object({
     latitude: z.number().min(-90).max(90),
     longitude: z.number().min(-180).max(180),
     address: z.string().min(5, 'Address must be at least 5 characters'),
-    userId: z.string().uuid('Invalid user ID'),
-    departmentId: z.string().uuid().optional(),
+    userId: z.string().min(1, 'Invalid user ID'),
+    departmentId: z.string().optional(),
+    departmentName: z.string().optional(),
+    imageUrl: z.string().optional(),
     images: z.array(z.string().url('Invalid image URL')).optional(),
   }),
 });
 
 export const updateComplaintStatusSchema = z.object({
   body: z.object({
-    status: z.enum(['PENDING', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']),
+    status: z.enum(['PENDING', 'VERIFIED', 'IN_PROGRESS', 'RESOLVED', 'VALIDATED', 'REJECTED']),
     remarks: z.string().optional(),
     changedById: z.string().min(1, 'changedById is required'),
     changedByType: z.enum(['USER', 'OFFICER', 'SYSTEM']),
@@ -61,8 +63,8 @@ export const updateComplaintStatusSchema = z.object({
 
 export const assignComplaintSchema = z.object({
   body: z.object({
-    departmentId: z.string().uuid().optional(),
-    officerId: z.string().uuid().optional(),
+    departmentId: z.string().optional(),
+    officerId: z.string().optional(),
   }).refine((data) => data.departmentId || data.officerId, {
     message: 'At least departmentId or officerId must be provided',
     path: ['departmentId'],

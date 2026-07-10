@@ -29,40 +29,42 @@ export class AiResponseParser {
       throw new Error(`Failed to parse response as JSON: ${err.message}. Raw: ${rawResponse}`);
     }
 
-    // Required fields check
+    // Required fields check & default assignments
     const requiredKeys = ['isCivicIssue', 'category', 'subcategory', 'severity', 'suggestedDepartment', 'summary', 'confidence', 'visibleIssues', 'requiresManualReview', 'reviewReason'];
     for (const key of requiredKeys) {
       if (!(key in data)) {
-        throw new Error(`Missing required key: "${key}"`);
+        data[key] = null;
       }
     }
 
     // Validate isCivicIssue
     if (typeof data.isCivicIssue !== 'boolean') {
-      throw new Error('Property "isCivicIssue" must be a boolean');
+      data.isCivicIssue = false;
     }
 
     // Validate confidence
     if (typeof data.confidence !== 'number' || data.confidence < 0 || data.confidence > 100) {
-      throw new Error(`Property "confidence" must be a number between 0 and 100, got: ${data.confidence}`);
+      data.confidence = 50;
     }
+
+    // Default fallbacks for missing/null content
+    if (!data.category) data.category = 'Other';
+    if (!data.subcategory) data.subcategory = 'Other';
+    if (!data.suggestedDepartment) data.suggestedDepartment = 'Other';
+    if (!data.summary) data.summary = 'No description available';
+    if (!Array.isArray(data.visibleIssues)) data.visibleIssues = [];
+    if (typeof data.requiresManualReview !== 'boolean') data.requiresManualReview = true;
 
     // Validate severity enum
     const allowedSeverities = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+    if (!data.severity) {
+      data.severity = 'LOW';
+    }
     const severityUpper = String(data.severity).toUpperCase().trim();
     if (!allowedSeverities.includes(severityUpper)) {
-      throw new Error(`Property "severity" must be one of LOW, MEDIUM, HIGH, CRITICAL. Got: ${data.severity}`);
-    }
-    data.severity = severityUpper; // normalize
-
-    // Validate arrays
-    if (!Array.isArray(data.visibleIssues)) {
-      throw new Error('Property "visibleIssues" must be an array');
-    }
-
-    // Validate requiresManualReview
-    if (typeof data.requiresManualReview !== 'boolean') {
-      throw new Error('Property "requiresManualReview" must be a boolean');
+      data.severity = 'LOW';
+    } else {
+      data.severity = severityUpper; // normalize
     }
 
     return data;

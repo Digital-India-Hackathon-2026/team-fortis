@@ -133,7 +133,7 @@ export class AuthController {
           username: account.username,
           email: email,
           phone: account.phone || '',
-          role: isOfficer ? 'officer' : (account.role || 'citizen').toLowerCase(),
+          role: (account.role || 'citizen').toLowerCase(),
           departmentId: account.departmentId || null,
           department: account.department || null
         },
