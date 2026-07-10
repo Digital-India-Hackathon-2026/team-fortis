@@ -1,0 +1,257 @@
+{
+  "users": [
+    {
+      "id": "citizen-id-1",
+      "name": "Rohan Sharma",
+      "username": "rohan_sharma",
+      "phone": "+919876543210",
+      "passwordHash": "$2b$10$iW6gQHlKdR3bRhjQhgfjM.b//5lduRtlMG4Hmmjsh7kFzBKDAU8e2",
+      "role": "CITIZEN",
+      "status": "ACTIVE",
+      "createdAt": "2026-07-10T11:20:14.932Z",
+      "updatedAt": "2026-07-10T11:20:14.932Z"
+    },
+    {
+      "id": "admin-id-1",
+      "name": "Admin User",
+      "username": "admin",
+      "phone": "+919999999999",
+      "passwordHash": "$2b$10$iW6gQHlKdR3bRhjQhgfjM.b//5lduRtlMG4Hmmjsh7kFzBKDAU8e2",
+      "role": "ADMIN",
+      "status": "ACTIVE",
+      "createdAt": "2026-07-10T11:20:14.932Z",
+      "updatedAt": "2026-07-10T11:20:14.932Z"
+    },
+    {
+      "id": "k2xqqtthstimreugftv",
+      "name": "Vikram Singh",
+      "username": "vikram_singh_1783682415044",
+      "phone": "+916532743784",
+      "passwordHash": "$2b$10$7nFlT4UC9hFrz2Tw3xCTxuZ1jHOoI.rxwXjs56tpUiV6sDZwT/Dmq",
+      "role": "CITIZEN",
+      "createdAt": "2026-07-10T11:20:15.139Z",
+      "updatedAt": "2026-07-10T11:20:15.139Z"
+    },
+    {
+      "id": "o9552yxsmjmreul6hq",
+      "name": "Vikram Singh",
+      "username": "vikram_singh_1783682636224",
+      "phone": "+917472903059",
+      "passwordHash": "$2b$10$8MQqgt8CX9AuA4Flot2zvuCW6h7F2UmvwLcr6svyPr3W4Dnw/CcRO",
+      "role": "CITIZEN",
+      "createdAt": "2026-07-10T11:23:56.318Z",
+      "updatedAt": "2026-07-10T11:23:56.318Z"
+    },
+    {
+      "id": "x97bp9vgsormreun24d",
+      "name": "Vikram Singh",
+      "username": "vikram_singh_1783682723870",
+      "phone": "+914632838742",
+      "passwordHash": "$2b$10$6w9QXclM/OiImy8PaKljEezAFgTTsXa0q.gn9ZeAhiXI603Gg6sf.",
+      "role": "CITIZEN",
+      "createdAt": "2026-07-10T11:25:23.965Z",
+      "updatedAt": "2026-07-10T11:25:23.965Z"
+    },
+    {
+      "id": "ltzgcr5is8mreutlv7",
+      "name": "Vikram Singh",
+      "username": "vikram_singh_1783683029396",
+      "phone": "+916139671316",
+      "passwordHash": "$2b$10$jOV5h2LqQw695FAhr1KgVezZLWPBaFtU9tC1lcgGKKfiefSJbCf4.",
+      "role": "CITIZEN",
+      "createdAt": "2026-07-10T11:30:29.491Z",
+      "updatedAt": "2026-07-10T11:30:29.491Z"
+    }
+  ],
+  "departments": [
+    {
+      "id": "dept-sanitation",
+      "name": "Sanitation & Waste Management",
+      "description": "Responsible for public garbage disposal, cleaning sewers, and disease control.",
+      "createdAt": "2026-07-10T11:20:14.932Z",
+      "updatedAt": "2026-07-10T11:20:14.932Z"
+    },
+    {
+      "id": "dept-roads",
+      "name": "Roads & Infrastructure",
+      "description": "Handles potholes, broken pavements, damaged streetlights, and traffic signs.",
+      "createdAt": "2026-07-10T11:20:14.932Z",
+      "updatedAt": "2026-07-10T11:20:14.932Z"
+    },
+    {
+      "id": "dept-water",
+      "name": "Water Supply & Sewage",
+      "description": "Deals with clean drinking water pipes, sewage leaks, and drainage.",
+      "createdAt": "2026-07-10T11:20:14.932Z",
+      "updatedAt": "2026-07-10T11:20:14.932Z"
+    }
+  ],
+  "officers": [
+    {
+      "id": "officer-vijay",
+      "name": "Inspector Vijay Kumar",
+      "username": "vijay_sanitation",
+      "passwordHash": "$2b$10$iW6gQHlKdR3bRhjQhgfjM.b//5lduRtlMG4Hmmjsh7kFzBKDAU8e2",
+      "role": "DEPT_HEAD",
+      "status": "ACTIVE",
+      "departmentId": "dept-sanitation",
+      "createdAt": "2026-07-10T11:20:14.932Z",
+      "updatedAt": "2026-07-10T11:20:14.932Z"
+    },
+    {
+      "id": "officer-anil",
+      "name": "Engineer Anil Mehta",
+      "username": "anil_roads",
+      "passwordHash": "$2b$10$iW6gQHlKdR3bRhjQhgfjM.b//5lduRtlMG4Hmmjsh7kFzBKDAU8e2",
+      "role": "OFFICER",
+      "status": "ACTIVE",
+      "departmentId": "dept-roads",
+      "createdAt": "2026-07-10T11:20:14.932Z",
+      "updatedAt": "2026-07-10T11:20:14.932Z"
+    }
+  ],
+  "complaints": [
+    {
+      "id": "complaint-1",
+      "title": "Overflowing Public Garbage Bin",
+      "description": "The public dustbin at Sector 15 main market is overflowing. It has not been cleared for three days, causing a severe stench and attracting stray animals.",
+      "category": "Waste Management",
+      "latitude": 28.6139,
+      "longitude": 77.209,
+      "address": "Sector 15 Market, Near Central Park, New Delhi",
+      "status": "PENDING",
+      "severity": "HIGH",
+      "userId": "citizen-id-1",
+      "departmentId": "dept-sanitation",
+      "officerId": null,
+      "createdAt": "2026-07-10T11:20:14.932Z",
+      "updatedAt": "2026-07-10T11:20:14.932Z"
+    },
+    {
+      "id": "complaint-2",
+      "title": "Massive Pothole on Main Road",
+      "description": "A deep pothole has developed right in the middle of the flyover descent. It is extremely dangerous for two-wheelers, especially during nighttime.",
+      "category": "Road Hazards",
+      "latitude": 28.625,
+      "longitude": 77.22,
+      "address": "Defense Colony Flyover Descent, New Delhi",
+      "status": "IN_PROGRESS",
+      "severity": "CRITICAL",
+      "userId": "citizen-id-1",
+      "departmentId": "dept-roads",
+      "officerId": "officer-anil",
+      "createdAt": "2026-07-10T11:20:14.932Z",
+      "updatedAt": "2026-07-10T11:20:14.932Z"
+    }
+  ],
+  "images": [
+    {
+      "id": "image-1",
+      "url": "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9",
+      "complaintId": "complaint-1",
+      "createdAt": "2026-07-10T11:20:14.932Z"
+    },
+    {
+      "id": "image-2",
+      "url": "https://images.unsplash.com/photo-1515162305285-0293e4767cc2",
+      "complaintId": "complaint-2",
+      "createdAt": "2026-07-10T11:20:14.932Z"
+    }
+  ],
+  "aiAnalyses": [
+    {
+      "id": "ai-1",
+      "complaintId": "complaint-1",
+      "summary": "Public garbage accumulation detected. Confirmed overflow causing hygiene hazard.",
+      "tags": [
+        "garbage",
+        "overflowing",
+        "health-hazard",
+        "market"
+      ],
+      "confidenceScore": 0.94,
+      "detectedSeverity": "HIGH",
+      "processedAt": "2026-07-10T11:20:14.932Z"
+    },
+    {
+      "id": "ai-2",
+      "complaintId": "complaint-2",
+      "summary": "Severe road infrastructure damage. Deep depression in road surface presents vehicle damage and safety risk.",
+      "tags": [
+        "pothole",
+        "road-damage",
+        "traffic-hazard",
+        "infrastructure"
+      ],
+      "confidenceScore": 0.98,
+      "detectedSeverity": "CRITICAL",
+      "processedAt": "2026-07-10T11:20:14.932Z"
+    }
+  ],
+  "statusHistories": [
+    {
+      "id": "sh-1",
+      "complaintId": "complaint-1",
+      "previousStatus": "PENDING",
+      "newStatus": "PENDING",
+      "remarks": "Complaint registered by citizen.",
+      "changedById": "citizen-id-1",
+      "changedByType": "USER",
+      "createdAt": "2026-07-10T11:20:14.932Z"
+    },
+    {
+      "id": "sh-2",
+      "complaintId": "complaint-2",
+      "previousStatus": "PENDING",
+      "newStatus": "PENDING",
+      "remarks": "Complaint registered by citizen.",
+      "changedById": "citizen-id-1",
+      "changedByType": "USER",
+      "createdAt": "2026-07-10T11:20:14.932Z"
+    },
+    {
+      "id": "sh-3",
+      "complaintId": "complaint-2",
+      "previousStatus": "PENDING",
+      "newStatus": "IN_PROGRESS",
+      "remarks": "Assigned to Engineer Anil Mehta. Status set to In Progress.",
+      "changedById": "admin-id-1",
+      "changedByType": "USER",
+      "createdAt": "2026-07-10T11:20:14.932Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif-1",
+      "title": "Complaint Registered",
+      "message": "Your complaint about Overflowing Public Garbage Bin has been submitted.",
+      "userId": "citizen-id-1",
+      "officerId": null,
+      "type": "INFO",
+      "isRead": false,
+      "createdAt": "2026-07-10T11:20:14.932Z"
+    },
+    {
+      "id": "notif-2",
+      "title": "Complaint Assigned",
+      "message": "Your complaint about Massive Pothole on Main Road has been assigned to an officer.",
+      "userId": "citizen-id-1",
+      "officerId": null,
+      "type": "UPDATE",
+      "isRead": false,
+      "createdAt": "2026-07-10T11:20:14.932Z"
+    },
+    {
+      "id": "notif-3",
+      "title": "New Assignment",
+      "message": "You have been assigned a new critical pothole complaint.",
+      "userId": null,
+      "officerId": "officer-anil",
+      "type": "ALERT",
+      "isRead": false,
+      "createdAt": "2026-07-10T11:20:14.932Z"
+    }
+  ],
+  "refreshTokens": [],
+  "auditLogs": []
+}
