@@ -613,7 +613,7 @@ export default function App() {
         </div>
       )}
 
-      {currentUser ? (
+      {currentUser && activeView === 'dashboard' ? (
         // ==========================================
         // PERSISTENT SIDEBAR LAYOUT (LOGGED IN STATES)
         // ==========================================
@@ -689,6 +689,14 @@ export default function App() {
               >
                 <Plus className="w-4 h-4" />
                 Lodge New Grievance
+              </button>
+
+              <button
+                onClick={() => setActiveView('landing')}
+                className="w-full bg-[#EEF8E8] hover:bg-[#EEF8E8]/75 border border-[#C3E39D] text-[#437132] font-bold text-xs py-2 px-4 rounded-[12px] transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+              >
+                <ArrowRight className="w-4 h-4 rotate-180 text-[#569140]" />
+                Back to Landing Page
               </button>
 
               <div className="bg-section-bg rounded-xl p-3 flex items-center justify-between border border-default-border">
@@ -1832,19 +1840,31 @@ export default function App() {
               ))}
             </nav>
 
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={() => { setActiveView('login'); setAuthMode('login'); }}
-                className="border border-[#6FB555] hover:bg-[#F5FAF2] text-[#569140] font-bold text-sm px-5 py-2 rounded-[10px] transition cursor-pointer"
-              >
-                Login
-              </button>
-              <button 
-                onClick={() => { setActiveView('login'); setAuthMode('register'); }}
-                className="bg-[#6FB555] hover:bg-[#569140] text-white font-bold text-sm px-5 py-2 rounded-[10px] shadow-sm transition cursor-pointer"
-              >
-                Register
-              </button>
+             <div className="flex items-center gap-4">
+              {currentUser ? (
+                <button 
+                  onClick={() => setActiveView('dashboard')}
+                  className="bg-[#6FB555] hover:bg-[#569140] text-white font-bold text-sm px-5 py-2.5 rounded-[10px] shadow-sm transition cursor-pointer flex items-center gap-1.5"
+                >
+                  <Activity className="w-4 h-4" />
+                  Go to Dashboard
+                </button>
+              ) : (
+                <>
+                  <button 
+                    onClick={() => { setActiveView('login'); setAuthMode('login'); }}
+                    className="border border-[#6FB555] hover:bg-[#F5FAF2] text-[#569140] font-bold text-sm px-5 py-2 rounded-[10px] transition cursor-pointer"
+                  >
+                    Login
+                  </button>
+                  <button 
+                    onClick={() => { setActiveView('login'); setAuthMode('register'); }}
+                    className="bg-[#6FB555] hover:bg-[#569140] text-white font-bold text-sm px-5 py-2 rounded-[10px] shadow-sm transition cursor-pointer"
+                  >
+                    Register
+                  </button>
+                </>
+              )}
             </div>
           </header>
 
@@ -1967,12 +1987,22 @@ export default function App() {
               <span className="text-slate-700">|</span>
               <span>Unified Municipal Grievance Grid</span>
             </div>
-            <button 
-              onClick={() => setActiveView('landing')} 
-              className="text-[#6FB555] hover:text-[#569140] font-bold cursor-pointer text-[10px] uppercase transition-colors"
-            >
-              Back to Home
-            </button>
+            <div className="flex items-center gap-4">
+              {currentUser && (
+                <button 
+                  onClick={() => setActiveView('dashboard')}
+                  className="text-white hover:text-[#6FB555] font-bold cursor-pointer text-[10px] uppercase transition-colors"
+                >
+                  Go to Dashboard
+                </button>
+              )}
+              <button 
+                onClick={() => setActiveView('landing')} 
+                className="text-[#6FB555] hover:text-[#569140] font-bold cursor-pointer text-[10px] uppercase transition-colors"
+              >
+                Back to Home
+              </button>
+            </div>
           </div>
 
           {/* Main Auth Container */}
