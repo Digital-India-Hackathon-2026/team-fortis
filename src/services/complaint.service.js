@@ -1,6 +1,17 @@
 import { prisma } from '../config/database.js';
 import { NotFoundError, BadRequestError } from '../utils/apiError.js';
-import { ComplaintStatus, ActorType } from '@prisma/client';
+const ComplaintStatus = {
+  PENDING: 'PENDING',
+  IN_PROGRESS: 'IN_PROGRESS',
+  RESOLVED: 'RESOLVED',
+  REJECTED: 'REJECTED',
+};
+
+const ActorType = {
+  USER: 'USER',
+  OFFICER: 'OFFICER',
+  SYSTEM: 'SYSTEM',
+};
 
 export class ComplaintService {
   static async createComplaint(data) {
@@ -81,9 +92,9 @@ export class ComplaintService {
     }
     if (filters.search) {
       whereClause.OR = [
-        { title: { contains: filters.search, mode: 'insensitive' } },
-        { description: { contains: filters.search, mode: 'insensitive' } },
-        { address: { contains: filters.search, mode: 'insensitive' } },
+        { title: { contains: filters.search } },
+        { description: { contains: filters.search } },
+        { address: { contains: filters.search } },
       ];
     }
 

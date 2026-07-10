@@ -10,10 +10,10 @@ export class SearchService {
       prisma.complaint.findMany({
         where: {
           OR: [
-            { title: { contains: query, mode: 'insensitive' } },
-            { description: { contains: query, mode: 'insensitive' } },
-            { category: { contains: query, mode: 'insensitive' } },
-            { address: { contains: query, mode: 'insensitive' } },
+            { title: { contains: query } },
+            { description: { contains: query } },
+            { category: { contains: query } },
+            { address: { contains: query } },
           ],
         },
         take: 10,
@@ -24,8 +24,8 @@ export class SearchService {
       prisma.department.findMany({
         where: {
           OR: [
-            { name: { contains: query, mode: 'insensitive' } },
-            { description: { contains: query, mode: 'insensitive' } },
+            { name: { contains: query } },
+            { description: { contains: query } },
           ],
         },
         take: 5,
@@ -33,8 +33,8 @@ export class SearchService {
       prisma.officer.findMany({
         where: {
           OR: [
-            { name: { contains: query, mode: 'insensitive' } },
-            { username: { contains: query, mode: 'insensitive' } },
+            { name: { contains: query } },
+            { username: { contains: query } },
           ],
         },
         take: 5,

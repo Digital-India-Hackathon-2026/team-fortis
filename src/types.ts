@@ -1,12 +1,13 @@
 export type Role = 'CITIZEN' | 'OFFICER' | 'DEPT_HEAD' | 'ADMIN';
-export type ComplaintStatus = 'PENDING' | 'IN_PROGRESS' | 'RESOLVED' | 'REJECTED';
-export type SeverityLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+export type ComplaintStatus = string;
+export type SeverityLevel = string;
 
 export interface User {
   id: string;
   username: string;
   name: string;
   phone?: string | null;
+  email?: string | null;
   role: string;
   status: string;
   createdAt: string;
@@ -49,6 +50,7 @@ export interface AIAnalysisResult {
   detectedCategory: string;
   detectedSeverity: string;
   confidenceScore: number;
+  confidence?: number;
   summary: string;
   tags: string | string[];
   createdAt: string;
@@ -67,6 +69,7 @@ export interface StatusHistory {
 
 export interface Complaint {
   id: string;
+  complaintId?: string | null;
   title: string;
   description: string;
   category: string;
@@ -82,7 +85,10 @@ export interface Complaint {
   officerId?: string | null;
   officer?: Officer | null;
   images?: Image[];
+  imageUrl?: string | null;
   aiAnalysis?: AIAnalysisResult | null;
+  aiConfidence?: number | null;
+  aiSummary?: string | null;
   statusHistory?: StatusHistory[];
   createdAt: string;
   updatedAt: string;

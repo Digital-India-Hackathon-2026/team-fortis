@@ -1,6 +1,42 @@
-import { PrismaClient, Role, OfficerRole, ComplaintStatus, Severity, ActorType, NotificationType } from '@prisma/client';
+import { PrismaClient } from '../src/generated/client/index.js';
 
 const prisma = new PrismaClient();
+
+const Role = {
+  CITIZEN: 'CITIZEN',
+  ADMIN: 'ADMIN',
+};
+
+const OfficerRole = {
+  OFFICER: 'OFFICER',
+  DEPT_HEAD: 'DEPT_HEAD',
+};
+
+const ComplaintStatus = {
+  PENDING: 'PENDING',
+  IN_PROGRESS: 'IN_PROGRESS',
+  RESOLVED: 'RESOLVED',
+  REJECTED: 'REJECTED',
+};
+
+const Severity = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  CRITICAL: 'CRITICAL',
+};
+
+const ActorType = {
+  USER: 'USER',
+  OFFICER: 'OFFICER',
+  SYSTEM: 'SYSTEM',
+};
+
+const NotificationType = {
+  INFO: 'INFO',
+  ALERT: 'ALERT',
+  UPDATE: 'UPDATE',
+};
 
 async function main() {
   console.log('Seeding database...');
@@ -124,7 +160,7 @@ async function main() {
     data: {
       complaintId: complaint1.id,
       summary: 'Public garbage accumulation detected. Confirmed overflow causing hygiene hazard.',
-      tags: ['garbage', 'overflowing', 'health-hazard', 'market'],
+      tags: JSON.stringify(['garbage', 'overflowing', 'health-hazard', 'market']),
       confidenceScore: 0.94,
       detectedSeverity: Severity.HIGH,
     },
@@ -134,7 +170,7 @@ async function main() {
     data: {
       complaintId: complaint2.id,
       summary: 'Severe road infrastructure damage. Deep depression in road surface presents vehicle damage and safety risk.',
-      tags: ['pothole', 'road-damage', 'traffic-hazard', 'infrastructure'],
+      tags: JSON.stringify(['pothole', 'road-damage', 'traffic-hazard', 'infrastructure']),
       confidenceScore: 0.98,
       detectedSeverity: Severity.CRITICAL,
     },

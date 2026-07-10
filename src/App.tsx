@@ -42,7 +42,7 @@ export default function App() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   
   // Navigation
-  const [activeNav, setActiveNav] = useState<'dashboard' | 'lodge' | 'my-complaints' | 'track' | 'road-explorer' | 'ward-health' | 'ai-assistant' | 'notifications' | 'settings'>('dashboard');
+  const [activeNav, setActiveNav] = useState<'dashboard' | 'lodge' | 'track' | 'road-explorer' | 'ai-assistant' | 'notifications' | 'settings'>('dashboard');
   const [selectedComplaintId, setSelectedComplaintId] = useState<string | null>(null);
   const [selectedComplaintDetails, setSelectedComplaintDetails] = useState<{ complaint: Complaint, history: any[] } | null>(null);
   const [language, setLanguage] = useState<'en' | 'hi' | 'te'>('en');
@@ -66,7 +66,7 @@ export default function App() {
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysisResult | null>(null);
   const [customCategory, setCustomCategory] = useState('');
   const [customSubcategory, setCustomSubcategory] = useState('');
-  const [customSeverity, setCustomSeverity] = useState<SeverityLevel>('Medium');
+  const [customSeverity, setCustomSeverity] = useState<SeverityLevel>('MEDIUM');
   const [customDepartment, setCustomDepartment] = useState('');
 
   // Location details
@@ -604,7 +604,7 @@ export default function App() {
     const matchesSearch = 
       c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.complaintId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (c.complaintId || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (c.address && c.address.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -656,17 +656,14 @@ export default function App() {
 
               {/* Navigation Items */}
               <nav className="p-4 space-y-1.5">
-                {[
+                {([
                   { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
                   { id: 'lodge', label: 'Lodge Complaint', icon: FileEdit },
-                  { id: 'my-complaints', label: 'My Complaints', icon: FileText },
                   { id: 'track', label: 'Track Complaint', icon: Clock },
                   { id: 'road-explorer', label: 'Road Explorer', icon: Compass },
-                  { id: 'ward-health', label: 'Ward Health', icon: Activity },
                   { id: 'ai-assistant', label: 'AI Assistant', icon: Sparkles },
-                  { id: 'notifications', label: 'Notifications', icon: Bell, badgeCount: notifications.filter(n => !n.isRead).length },
                   { id: 'settings', label: 'Settings', icon: Settings },
-                ].map(item => {
+                ] as { id: string, label: string, icon: any, badgeCount?: number }[]).map(item => {
                   const IconComp = item.icon;
                   const isActive = activeNav === item.id;
                   return (
@@ -674,9 +671,6 @@ export default function App() {
                       key={item.id}
                       onClick={() => {
                         setActiveNav(item.id as any);
-                        if (item.id === 'my-complaints') {
-                          setStatusFilter('All');
-                        }
                       }}
                       className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${
                         isActive 
@@ -771,7 +765,7 @@ export default function App() {
                 {/* Notifications trigger */}
                 <button 
                   onClick={() => setActiveNav('notifications')}
-                  className="relative p-2 text-slate-500 hover:text-slate-800 rounded-full hover:bg-slate-100 transition"
+                  className="relative p-2 text-slate-500 hover:text-slate-800 rounded-full hover:bg-slate-100 transition cursor-pointer"
                 >
                   <Bell className="w-5 h-5" />
                   {notifications.some(n => !n.isRead) && (
@@ -781,6 +775,7 @@ export default function App() {
 
                 {/* Vertical Separator */}
                 <span className="h-6 w-px bg-slate-200"></span>
+
 
                 {/* Profile display */}
                 <div className="flex items-center space-x-2">
@@ -1061,10 +1056,10 @@ export default function App() {
                           </div>
                         </div>
                         <button 
-                          onClick={() => setActiveNav('ward-health')}
+                          onClick={() => setActiveNav('road-explorer')}
                           className="w-full bg-[#6FB555] hover:bg-[#569140] text-white font-bold text-xs py-2.5 px-3 rounded-[12px] transition cursor-pointer"
                         >
-                          View Analytics
+                          View GIS Grid
                         </button>
                       </div>
 
@@ -1690,7 +1685,7 @@ export default function App() {
                                 <div className="grid grid-cols-2 gap-2">
                                   <div className="space-y-1">
                                     <img 
-                                      src={selectedComplaintDetails.complaint.imageUrl} 
+                                      src={selectedComplaintDetails.complaint.imageUrl || undefined} 
                                       alt="Before" 
                                       className="h-24 w-full object-cover rounded-lg border border-slate-200"
                                     />
@@ -1700,7 +1695,7 @@ export default function App() {
                                     {selectedComplaintDetails.complaint.status === 'Resolved' ? (
                                       <div className="relative">
                                         <img 
-                                          src={selectedComplaintDetails.complaint.imageUrl} 
+                                          src={selectedComplaintDetails.complaint.imageUrl || undefined} 
                                           alt="After" 
                                           className="h-24 w-full object-cover rounded-lg border border-slate-200"
                                         />
@@ -1812,8 +1807,59 @@ export default function App() {
                 </div>
               )}
 
+              {/* ROAD EXPLORER TAB */}
+              {activeNav === 'road-explorer' && (
+                <div className="space-y-6">
+                  <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                      <div>
+                        <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                          <Compass className="w-6 h-6 text-blue-600" />
+                          Road Explorer GIS Grid
+                        </h2>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Interactive Leaflet Map representing all registered municipal complaints across Telangana State, color-coded by severity.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-4 bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-xs font-bold text-slate-700">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-3 h-3 rounded-full bg-rose-500"></span>
+                          <span>Critical</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-3 h-3 rounded-full bg-orange-500"></span>
+                          <span>High</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+                          <span>Medium</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
+                          <span>Low</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl overflow-hidden border border-slate-200 relative bg-white">
+                      <InteractiveMap 
+                        complaints={complaints}
+                        selectedComplaintId={selectedComplaintId}
+                        onSelectComplaint={(id) => {
+                          setSelectedComplaintId(id);
+                          setActiveNav('track');
+                        }}
+                        interactiveMode="view"
+                        colorBy="severity"
+                        height="h-[600px]"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* OTHER TABS PLACEHOLDERS */}
-              {!['dashboard', 'lodge', 'track'].includes(activeNav) && (
+              {!['dashboard', 'lodge', 'track', 'road-explorer'].includes(activeNav) && (
                 <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400 max-w-xl mx-auto shadow-sm space-y-4">
                   <Activity className="w-12 h-12 mx-auto text-blue-600" />
                   <h3 className="text-base font-bold text-slate-900 uppercase tracking-wider">{activeNav.replace('-', ' ')} Module</h3>
@@ -1960,7 +2006,7 @@ export default function App() {
                     { title: 'AI Verification', desc: 'AI verifies and categorizes complaints for faster processing.', icon: Sparkles, color: 'text-[#569140]', bg: 'bg-[#EEF8E8]' },
                     { title: 'Real-time Tracking', desc: 'Track your complaint status in real-time, every step of the way.', icon: MapPin, color: 'text-amber-600', bg: 'bg-amber-50' },
                     { title: 'Right Department', desc: 'Automatically assign to the right department for faster resolution.', icon: Building2, color: 'text-cyan-600', bg: 'bg-cyan-50' },
-                    { title: 'Notifications', desc: 'Get instant updates via notifications and emails about your complaint.', icon: Bell, color: 'text-rose-600', bg: 'bg-rose-50' },
+                    { title: 'GIS Mapping', desc: 'Explore live, color-coded interactive mapping of all registered complaints.', icon: Compass, color: 'text-indigo-600', bg: 'bg-indigo-50' },
                     { title: 'Transparency', desc: 'Transparent system with analytics and public insights.', icon: BarChart3, color: 'text-[#569140]', bg: 'bg-[#EEF8E8]' }
                   ].map((feat, idx) => {
                     const Icon = feat.icon;

@@ -15,6 +15,7 @@ interface InteractiveMapProps {
   pinnedLat?: number | null;
   pinnedLng?: number | null;
   height?: string;
+  colorBy?: 'category' | 'severity';
 }
 
 // Center Coordinates
@@ -28,6 +29,18 @@ const getCategoryColor = (category: string) => {
     case 'Solid Waste & Sanitation': return '#10b981'; // emerald
     case 'Water Supply & Sewerage': return '#3b82f6'; // blue
     case 'Electricity & Streetlights': return '#6366f1'; // indigo
+    default: return '#94a3b8'; // slate
+  }
+};
+
+const getSeverityColor = (severity?: string) => {
+  if (!severity) return '#94a3b8'; // slate
+  const sev = severity.toUpperCase();
+  switch (sev) {
+    case 'CRITICAL': return '#ef4444'; // red/rose
+    case 'HIGH': return '#f97316'; // orange
+    case 'MEDIUM': return '#3b82f6'; // blue
+    case 'LOW': return '#10b981'; // green
     default: return '#94a3b8'; // slate
   }
 };
@@ -51,7 +64,8 @@ export default function InteractiveMap({
   onPinSelect,
   pinnedLat,
   pinnedLng,
-  height = 'h-[500px]'
+  height = 'h-[500px]',
+  colorBy = 'category'
 }: InteractiveMapProps) {
   const [mapView, setMapView] = useState<'telangana' | 'hyderabad'>('telangana');
   const [searchQuery, setSearchQuery] = useState('');
@@ -136,7 +150,7 @@ export default function InteractiveMap({
         const matchesQuery = comp.title.toLowerCase().includes(q) || 
                              comp.description.toLowerCase().includes(q) || 
                              (comp.address || '').toLowerCase().includes(q) ||
-                             comp.complaintId.toLowerCase().includes(q);
+                             (comp.complaintId || '').toLowerCase().includes(q);
         if (!matchesQuery) return false;
       }
 
@@ -157,8 +171,8 @@ export default function InteractiveMap({
     plottedComplaints.forEach(comp => {
       if (!comp.latitude || !comp.longitude) return;
       const isSelected = selectedComplaintId === comp.id;
-      const color = getCategoryColor(comp.category);
-      const isCritical = comp.severity === 'Critical' || comp.severity === 'High';
+      const color = colorBy === 'severity' ? getSeverityColor(comp.severity) : getCategoryColor(comp.category);
+      const isCritical = comp.severity === 'Critical' || comp.severity === 'High' || comp.severity?.toUpperCase() === 'CRITICAL' || comp.severity?.toUpperCase() === 'HIGH';
       const pulseClass = isCritical ? 'animate-ping' : '';
 
       // Create clean, gorgeous colored dot markers
@@ -167,8 +181,8 @@ export default function InteractiveMap({
         html: `
           <div class="relative flex items-center justify-center w-6 h-6">
             ${isCritical ? `<span class="absolute inline-flex h-5 w-5 rounded-full opacity-60 ${pulseClass}" style="background-color: ${color}"></span>` : ''}
-            <div class="w-3.5 h-3.5 rounded-full shadow-lg border-2 border-slate-950 transition-all duration-200 ${
-              isSelected ? 'ring-4 ring-amber-400/50 scale-125' : 'hover:scale-110'
+            <div class="w-3.5 h-3.5 rounded-full shadow-lg border-2 border-white transition-all duration-200 ${
+              isSelected ? 'ring-4 ring-[#6FB555]/50 scale-125' : 'hover:scale-110'
             }" style="background-color: ${color}"></div>
           </div>
         `,
@@ -180,14 +194,14 @@ export default function InteractiveMap({
 
       // Add a clean, responsive popup
       const popupContent = `
-        <div class="p-2 min-w-[200px] text-slate-100 bg-slate-950 font-sans">
-          <div class="flex items-center justify-between gap-1.5 border-b border-slate-800 pb-1.5 mb-1.5">
-            <span class="text-[9px] font-black text-slate-500 tracking-wider">${comp.complaintId}</span>
+        <div class="p-2 min-w-[200px] text-[#27322B] bg-white font-sans rounded-xl border border-[#EDF2EA]">
+          <div class="flex items-center justify-between gap-1.5 border-b border-[#EDF2EA] pb-1.5 mb-1.5">
+            <span class="text-[9px] font-bold text-[#5F6B63] tracking-wider">${comp.complaintId || comp.id.substring(0, 8)}</span>
             <span class="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-amber-900/40 text-amber-300">${comp.status}</span>
           </div>
-          <h4 class="text-xs font-black text-white leading-tight mb-1">${comp.title}</h4>
-          <p class="text-[10px] text-slate-400 line-clamp-2">${comp.description || ''}</p>
-          <p class="text-[9px] text-slate-500 mt-1 flex items-center gap-1 font-semibold truncate">📍 ${comp.address || 'Telangana'}</p>
+          <h4 class="text-xs font-black text-slate-900 leading-tight mb-1">${comp.title}</h4>
+          <p class="text-[10px] text-slate-500 line-clamp-2">${comp.description || ''}</p>
+          <p class="text-[9px] text-slate-400 mt-1 flex items-center gap-1 font-semibold truncate">📍 ${comp.address || 'Telangana'}</p>
         </div>
       `;
 
@@ -477,7 +491,7 @@ export default function InteractiveMap({
             <div className="flex items-start gap-3 max-w-2xl">
               {activeComplaint.imageUrl ? (
                 <img 
-                  src={activeComplaint.imageUrl} 
+                  src={activeComplaint.imageUrl || undefined} 
                   alt="Defect Preview" 
                   className="w-14 h-14 rounded-lg object-cover border border-slate-800 mt-0.5 shrink-0" 
                 />
@@ -489,7 +503,7 @@ export default function InteractiveMap({
               <div className="space-y-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-[9px] bg-slate-800 text-slate-300 font-extrabold px-1.5 py-0.5 rounded">
-                    {activeComplaint.complaintId}
+                    {activeComplaint.complaintId || activeComplaint.id.substring(0, 8)}
                   </span>
                   <span className="text-white font-extrabold text-xs">{activeComplaint.title}</span>
                   <span className={`text-[8px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${

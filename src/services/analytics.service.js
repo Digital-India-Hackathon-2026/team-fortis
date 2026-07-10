@@ -1,5 +1,10 @@
 import { prisma } from '../config/database.js';
-import { ComplaintStatus } from '@prisma/client';
+const ComplaintStatus = {
+  PENDING: 'PENDING',
+  IN_PROGRESS: 'IN_PROGRESS',
+  RESOLVED: 'RESOLVED',
+  REJECTED: 'REJECTED',
+};
 
 export class AnalyticsService {
   static async getSummary() {

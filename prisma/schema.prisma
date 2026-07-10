@@ -1,46 +1,11 @@
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 generator client {
   provider = "prisma-client-js"
-}
-
-enum Role {
-  CITIZEN
-  ADMIN
-}
-
-enum OfficerRole {
-  OFFICER
-  DEPT_HEAD
-}
-
-enum ComplaintStatus {
-  PENDING
-  IN_PROGRESS
-  RESOLVED
-  REJECTED
-}
-
-enum Severity {
-  LOW
-  MEDIUM
-  HIGH
-  CRITICAL
-}
-
-enum NotificationType {
-  INFO
-  ALERT
-  UPDATE
-}
-
-enum ActorType {
-  USER
-  OFFICER
-  SYSTEM
+  output   = "../src/generated/client"
 }
 
 model User {
@@ -49,7 +14,7 @@ model User {
   phone         String?        @unique
   passwordHash  String
   name          String
-  role          Role           @default(CITIZEN)
+  role          String         @default("CITIZEN") // CITIZEN, ADMIN
   status        String         @default("ACTIVE") // ACTIVE, SUSPENDED
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -73,7 +38,7 @@ model Officer {
   username      String         @unique
   passwordHash  String
   name          String
-  role          OfficerRole    @default(OFFICER)
+  role          String         @default("OFFICER") // OFFICER, DEPT_HEAD
   status        String         @default("ACTIVE") // ACTIVE, SUSPENDED
   departmentId  String
   department    Department     @relation(fields: [departmentId], references: [id], onDelete: Cascade)
@@ -92,8 +57,8 @@ model Complaint {
   latitude      Float
   longitude     Float
   address       String
-  status        ComplaintStatus @default(PENDING)
-  severity      Severity        @default(MEDIUM)
+  status        String          @default("PENDING") // PENDING, IN_PROGRESS, RESOLVED, REJECTED
+  severity      String          @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
   userId        String
   user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   departmentId  String?
@@ -120,9 +85,9 @@ model AIAnalysis {
   complaintId     String    @unique
   complaint       Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
   summary         String
-  tags            Json      // String array of tags
+  tags            String    // Serialized JSON or comma-separated string
   confidenceScore Float     @default(0.0)
-  detectedSeverity Severity  @default(MEDIUM)
+  detectedSeverity String    @default("MEDIUM")
   processedAt     DateTime  @default(now())
 }
 
@@ -130,7 +95,7 @@ model Notification {
   id        String           @id @default(uuid())
   title     String
   message   String
-  type      NotificationType @default(INFO)
+  type      String           @default("INFO") // INFO, ALERT, UPDATE
   isRead    Boolean          @default(false)
   userId    String?
   user      User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -143,11 +108,11 @@ model StatusHistory {
   id             String          @id @default(uuid())
   complaintId    String
   complaint      Complaint       @relation(fields: [complaintId], references: [id], onDelete: Cascade)
-  previousStatus ComplaintStatus
-  newStatus      ComplaintStatus
+  previousStatus String
+  newStatus      String
   remarks        String?
   changedById    String
-  changedByType  ActorType       @default(SYSTEM)
+  changedByType  String          @default("SYSTEM") // USER, OFFICER, SYSTEM
   createdAt      DateTime        @default(now())
 }
 
@@ -167,7 +132,7 @@ model AuditLog {
   action         String
   details        String
   performedById  String?
-  performedByType ActorType @default(SYSTEM)
+  performedByType String    @default("SYSTEM")
   ipAddress      String?
   createdAt      DateTime  @default(now())
 }
