@@ -117,7 +117,12 @@ export class ComplaintService {
       whereClause.departmentId = filters.departmentId;
     }
     if (filters.officerId) {
-      whereClause.officerId = filters.officerId;
+      const officer = await prisma.officer.findUnique({ where: { id: filters.officerId } });
+      if (officer && (officer.role === 'DEPT_HEAD' || officer.role === 'dept_head')) {
+        whereClause.departmentId = officer.departmentId;
+      } else {
+        whereClause.officerId = filters.officerId;
+      }
     }
     if (filters.userId) {
       whereClause.userId = filters.userId;
