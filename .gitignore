@@ -28,6 +28,9 @@ yarn-error.log*
 prisma/*.db
 prisma/*.db-journal
 src/generated/
+mock_db.json
+/mock_db.json
+scratch/
 
 # Cloudflare and build outputs
 dist/
