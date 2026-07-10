@@ -43,7 +43,7 @@ export default function App() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   
   // Navigation
-  const [activeNav, setActiveNav] = useState<'dashboard' | 'lodge' | 'track' | 'road-explorer' | 'ai-assistant' | 'notifications' | 'settings'>('dashboard');
+  const [activeNav, setActiveNav] = useState<'dashboard' | 'lodge' | 'my-complaints' | 'track' | 'road-explorer' | 'ward-health' | 'ai-assistant' | 'notifications' | 'settings' | 'officer-management' | 'my-profile'>('dashboard');
   const [selectedComplaintId, setSelectedComplaintId] = useState<string | null>(null);
   const [selectedComplaintDetails, setSelectedComplaintDetails] = useState<{ complaint: Complaint, history: any[] } | null>(null);
   
@@ -674,41 +674,14 @@ export default function App() {
                   <p className="text-[9px] text-primary-hover font-semibold mt-0.5 leading-none">{t("dashboard.banner.badge")}</p>
                 </div>
               </div>
-
               {/* Navigation Items */}
               <nav className="p-4 space-y-1.5">
-                {([
-                  { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
-                  { id: 'lodge', label: 'Lodge Complaint', icon: FileEdit },
-                  { id: 'track', label: 'Track Complaint', icon: Clock },
-                  { id: 'road-explorer', label: 'Road Explorer', icon: Compass },
-                  { id: 'ai-assistant', label: 'AI Assistant', icon: Sparkles },
-                  { id: 'settings', label: 'Settings', icon: Settings },
-                ] as { id: string, label: string, icon: any, badgeCount?: number }[]).map(item => {
-                  const IconComp = item.icon;
-                  const isActive = activeNav === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        setActiveNav(item.id as any);
-                      }}
-                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${
-                        isActive 
-                          ? 'bg-surface-green text-primary-text border-l-4 border-primary-green' 
-                          : 'text-secondary-text hover:bg-hover-bg hover:text-primary-text'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <IconComp className={`w-4.5 h-4.5 ${isActive ? 'text-primary-hover' : 'text-muted-text'}`} />
-                        <span>{item.label}</span>
-                      </div>
-                      {item.badgeCount && item.badgeCount > 0 ? (
-                        <span className="bg-rose-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
-                          {item.badgeCount}
-                        </span>
-                      ) : null}
-                    </button>
+                {(() => {
+                  const isOfficer = currentUser && (
+                    currentUser.role === 'OFFICER' || 
+                    currentUser.role === 'DEPT_HEAD' || 
+                    currentUser.role === 'officer' || 
+                    currentUser.role === 'dept_head'
                   );
                   const isAdmin = currentUser && (
                     currentUser.role === 'ADMIN' || 
@@ -718,31 +691,24 @@ export default function App() {
                   let navItems = [
                     { id: 'dashboard', tKey: 'sidebar.dashboard', icon: BarChart3 },
                     { id: 'lodge', tKey: 'sidebar.lodge', icon: FileEdit },
-                    { id: 'my-complaints', tKey: 'sidebar.myComplaints', icon: FileText },
                     { id: 'track', tKey: 'sidebar.track', icon: Clock },
                     { id: 'road-explorer', tKey: 'sidebar.roadExplorer', icon: Compass },
-                    { id: 'ward-health', tKey: 'sidebar.wardHealth', icon: Activity },
                     { id: 'ai-assistant', tKey: 'sidebar.aiAssistant', icon: Sparkles },
-                    { id: 'notifications', tKey: 'sidebar.notifications', icon: Bell, badgeCount: notifications.filter(n => !n.isRead).length },
                     { id: 'settings', tKey: 'sidebar.settings', icon: Settings },
                   ];
 
                   if (isOfficer) {
                     navItems = [
                       { id: 'dashboard', tKey: 'sidebar.dashboard', icon: BarChart3 },
-                      { id: 'my-complaints', tKey: 'sidebar.assignedComplaints', icon: FileText },
                       { id: 'road-explorer', tKey: 'sidebar.roadExplorer', icon: Compass },
-                      { id: 'notifications', tKey: 'sidebar.notifications', icon: Bell, badgeCount: notifications.filter(n => !n.isRead).length },
                       { id: 'my-profile', tKey: 'sidebar.myProfile', icon: Users },
                       { id: 'settings', tKey: 'sidebar.settings', icon: Settings },
                     ];
                   } else if (isAdmin) {
                     navItems = [
                       { id: 'dashboard', tKey: 'sidebar.dashboard', icon: BarChart3 },
-                      { id: 'my-complaints', tKey: 'sidebar.complaintManagement', icon: FileText },
                       { id: 'officer-management', tKey: 'sidebar.officerManagement', icon: Users },
                       { id: 'road-explorer', tKey: 'sidebar.roadExplorer', icon: Compass },
-                      { id: 'notifications', tKey: 'sidebar.notifications', icon: Bell, badgeCount: notifications.filter(n => !n.isRead).length },
                       { id: 'my-profile', tKey: 'sidebar.myProfile', icon: Users },
                       { id: 'settings', tKey: 'sidebar.settings', icon: Settings },
                     ];
@@ -756,9 +722,6 @@ export default function App() {
                         key={item.id}
                         onClick={() => {
                           setActiveNav(item.id as any);
-                          if (item.id === 'my-complaints') {
-                            setStatusFilter('All');
-                          }
                         }}
                         className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${
                           isActive 
@@ -770,11 +733,6 @@ export default function App() {
                           <IconComp className={`w-4.5 h-4.5 ${isActive ? 'text-primary-hover' : 'text-muted-text'}`} />
                           <span>{t(item.tKey)}</span>
                         </div>
-                        {item.badgeCount && item.badgeCount > 0 ? (
-                          <span className="bg-rose-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
-                            {item.badgeCount}
-                          </span>
-                        ) : null}
                       </button>
                     );
                   });
