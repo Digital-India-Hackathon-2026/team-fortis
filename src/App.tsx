@@ -109,7 +109,7 @@ export default function App() {
   const [chatOpen, setChatOpen] = useState(false);
   const [chatQuery, setChatQuery] = useState('');
   const [chatMessages, setChatMessages] = useState<Array<{ sender: 'user' | 'bot', text: string }>>([
-    { sender: 'bot', text: 'Hello! I am your GHMC digital assistant. How can I help you route, track or lodge a civic complaint today?' }
+    { sender: 'bot', text: 'Hello! I am your CivicAI digital assistant. How can I help you route, track or lodge a civic complaint today?' }
   ]);
   const [chatLoading, setChatLoading] = useState(false);
 
@@ -1841,8 +1841,8 @@ export default function App() {
             <div className="flex items-center gap-3">
               <img src={logo} alt="CivicAI Logo" className="h-12 w-12 object-contain" />
               <div>
-                <span className="text-xl font-bold tracking-tight text-[#27322B] block leading-tight">GHMC Grievance Portal</span>
-                <span className="text-[10px] text-[#5F6B63] font-semibold uppercase tracking-wider block">Greater Hyderabad Municipal Corporation</span>
+                <span className="text-xl font-bold tracking-tight text-[#27322B] block leading-tight">CiviqAI</span>
+                <span className="text-[10px] text-[#5F6B63] font-semibold uppercase tracking-wider block">Smart Grievances. Stronger Cities.</span>
               </div>
             </div>
 
@@ -1902,7 +1902,7 @@ export default function App() {
                 </h1>
                 
                 <p className="text-sm md:text-base text-[#5F6B63] leading-relaxed font-medium">
-                  GHMC Grievance Portal is an AI-powered platform that helps Hyderabad citizens report civic issues, track their status in real-time, and ensures transparent and timely resolution by the right authorities.
+                  CiviqAI is an AI-powered platform that helps citizens report civic issues, track their status in real-time, and ensures transparent and timely resolution by the right authorities.
                 </p>
 
                 <div className="flex flex-wrap gap-4 pt-2">
@@ -2123,7 +2123,7 @@ export default function App() {
                   <div className="space-y-1.5">
                     <h3 className="font-extrabold text-[#27322B] text-xl tracking-tight">Secure Gateway Portal</h3>
                     <p className="text-xs text-[#5F6B63]">
-                      Authenticate securely to access the GHMC grievance management platform.
+                      Authenticate securely to access the CivicAI grievance management platform.
                     </p>
                   </div>
 
