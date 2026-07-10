@@ -422,6 +422,21 @@
       "status": "PENDING",
       "createdAt": "2026-07-10T23:10:44.144Z",
       "updatedAt": "2026-07-10T23:10:44.144Z"
+    },
+    {
+      "id": "19xqo9sa5aamrfke8pw",
+      "title": "Severe water leak in market place",
+      "description": "There is clean drinking water leaking from the main pipe.",
+      "category": "Water Supply & Sewerage",
+      "latitude": 17.385,
+      "longitude": 78.4867,
+      "address": "Secunderabad Market Road, Hyderabad",
+      "userId": "citizen-id-1",
+      "departmentId": "dept-water",
+      "officerId": "officer-admin-water",
+      "status": "PENDING",
+      "createdAt": "2026-07-10T23:26:22.628Z",
+      "updatedAt": "2026-07-10T23:26:22.628Z"
     }
   ],
   "images": [
@@ -658,6 +673,17 @@
       "changedByType": "USER",
       "createdAt": "2026-07-10T23:10:44.240Z",
       "updatedAt": "2026-07-10T23:10:44.240Z"
+    },
+    {
+      "id": "o5kutn9laudmrfke8r2",
+      "complaintId": "19xqo9sa5aamrfke8pw",
+      "previousStatus": "PENDING",
+      "newStatus": "PENDING",
+      "remarks": "Complaint registered successfully",
+      "changedById": "citizen-id-1",
+      "changedByType": "USER",
+      "createdAt": "2026-07-10T23:26:22.671Z",
+      "updatedAt": "2026-07-10T23:26:22.671Z"
     }
   ],
   "notifications": [

@@ -46,6 +46,20 @@ export class ComplaintService {
     }
 
     return prisma.$transaction(async (tx) => {
+      // Find the department head for auto-routing/auto-assignment
+      let assignedOfficerId = null;
+      if (resolvedDepartmentId) {
+        const deptHead = await tx.officer.findFirst({
+          where: {
+            departmentId: resolvedDepartmentId,
+            role: 'DEPT_HEAD',
+          }
+        });
+        if (deptHead) {
+          assignedOfficerId = deptHead.id;
+        }
+      }
+
       const complaint = await tx.complaint.create({
         data: {
           title: data.title,
@@ -56,6 +70,7 @@ export class ComplaintService {
           address: data.address,
           userId: data.userId,
           departmentId: resolvedDepartmentId,
+          officerId: assignedOfficerId,
           status: ComplaintStatus.PENDING,
         },
       });
