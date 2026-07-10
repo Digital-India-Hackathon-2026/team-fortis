@@ -1821,6 +1821,15 @@ export default function App() {
           {/* Header / Navigation Bar */}
           <header className="h-[80px] border-b border-[#EDF2EA] bg-white px-6 md:px-12 flex justify-between items-center z-20 shrink-0">
             <div className="flex items-center gap-3">
+              {currentUser && (
+                <button 
+                  onClick={() => setActiveView('dashboard')}
+                  className="bg-[#EEF8E8] hover:bg-[#EEF8E8]/80 text-[#437132] p-2 rounded-xl transition cursor-pointer flex items-center justify-center border border-[#C3E39D] shadow-sm mr-1"
+                  title="Back to Dashboard"
+                >
+                  <ArrowRight className="w-4 h-4 rotate-180 text-[#569140]" />
+                </button>
+              )}
               <img src={logo} alt="CivicAI Logo" className="h-12 w-12 object-contain" />
               <div>
                 <span className="text-xl font-bold tracking-tight text-[#27322B] block leading-tight">CiviqAI</span>
