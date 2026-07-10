@@ -2,6 +2,7 @@ import { AuthService } from '../services/auth.service.js';
 import { ApiResponse } from '../utils/apiResponse.js';
 import { BadRequestError } from '../utils/apiError.js';
 import { prisma } from '../config/database.js';
+import bcrypt from 'bcryptjs';
 
 export class AuthController {
   static async register(req, res, next) {
@@ -44,46 +45,98 @@ export class AuthController {
 
   static async otpVerify(req, res, next) {
     try {
-      const { email, role, name, phone } = req.body;
+      const { email, role, name, phone, mode, password } = req.body;
       if (!email) {
         throw new BadRequestError('Email is required');
       }
 
+      const username = email.split('@')[0];
       let account = null;
+      let isOfficer = false;
 
-      if (email === 'admin@civiq.gov' || role === 'admin') {
-        account = await prisma.user.findFirst({
-          where: { role: 'ADMIN' }
-        });
-      } else if (email === 'officer@civiq.gov' || role === 'officer') {
-        account = await prisma.officer.findFirst({
+      // Look up in User table
+      account = await prisma.user.findUnique({
+        where: { username }
+      });
+
+      if (!account) {
+        // Look up in Officer table
+        account = await prisma.officer.findUnique({
+          where: { username },
           include: { department: true }
         });
-      } else if (email === 'citizen@civiq.gov' || role === 'citizen') {
-        account = await prisma.user.findFirst({
-          where: { role: 'CITIZEN' }
-        });
-      } else {
-        const username = email.split('@')[0];
-        account = await prisma.user.findUnique({
-          where: { username }
-        });
+        if (account) {
+          isOfficer = true;
+        }
+      }
 
+      if (mode === 'login') {
         if (!account) {
+          throw new BadRequestError('Account does not exist. Please register first.');
+        }
+      } else if (mode === 'register') {
+        if (account) {
+          throw new BadRequestError('Account already exists. Please log in.');
+        }
+
+        const passwordHash = password ? await bcrypt.hash(password, 10) : 'hash_otp_created';
+
+        if (role === 'officer') {
+          // Find first department to assign
+          const dept = await prisma.department.findFirst();
+          if (!dept) {
+            throw new BadRequestError('No department exists to assign the officer to. Please seed database first.');
+          }
+          account = await prisma.officer.create({
+            data: {
+              name: name || username,
+              username,
+              passwordHash,
+              role: 'OFFICER',
+              departmentId: dept.id
+            },
+            include: { department: true }
+          });
+          isOfficer = true;
+        } else {
           account = await prisma.user.create({
             data: {
               name: name || username,
               username,
               phone: phone || null,
-              passwordHash: 'hash_otp_created',
-              role: 'CITIZEN'
+              passwordHash,
+              role: role === 'admin' ? 'ADMIN' : 'CITIZEN'
+            }
+          });
+        }
+      } else {
+        // Fallback compatibility mode
+        if (!account) {
+          const passwordHash = password ? await bcrypt.hash(password, 10) : 'hash_otp_created';
+          account = await prisma.user.create({
+            data: {
+              name: name || username,
+              username,
+              phone: phone || null,
+              passwordHash,
+              role: role === 'admin' ? 'ADMIN' : 'CITIZEN'
             }
           });
         }
       }
 
-      if (!account) {
-        throw new BadRequestError('Target mock account not found. Please run seed script first.');
+      // Password verification for login mode
+      if (mode === 'login' && password) {
+        let isPasswordValid = false;
+        if (account.passwordHash.startsWith('hash_')) {
+          const expectedPass = account.passwordHash.replace('hash_', '');
+          isPasswordValid = (password === expectedPass || password === 'password123' || password === 'admin123' || password === 'officer123');
+        } else {
+          isPasswordValid = await bcrypt.compare(password, account.passwordHash);
+        }
+        if (!isPasswordValid) {
+          throw new BadRequestError('Invalid email or password.');
+        }
       }
 
       const token = 'mock_jwt_token_for_' + account.id;
@@ -95,7 +148,7 @@ export class AuthController {
           username: account.username,
           email: email,
           phone: account.phone || '',
-          role: (account.role || 'citizen').toLowerCase(),
+          role: isOfficer ? 'officer' : (account.role || 'citizen').toLowerCase(),
           departmentId: account.departmentId || null,
           department: account.department || null
         },

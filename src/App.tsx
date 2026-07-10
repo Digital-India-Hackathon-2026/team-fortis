@@ -51,7 +51,7 @@ export default function App() {
   // Toast notifications
   const [toast, setToast] = useState<Toast | null>(null);
 
-  const [activeView, setActiveView] = useState<'landing' | 'login'>('landing');
+  const [activeView, setActiveView] = useState<'landing' | 'login' | 'dashboard'>('landing');
 
   // Search and Filter states
   const [searchQuery, setSearchQuery] = useState('');
@@ -178,6 +178,7 @@ export default function App() {
     if (savedUser && savedToken) {
       setCurrentUser(JSON.parse(savedUser));
       setAuthToken(savedToken);
+      setActiveView('dashboard');
     }
   }, []);
 
@@ -199,9 +200,10 @@ export default function App() {
     try {
       const res = await fetch('/api/departments');
       const data = await res.json();
-      setDepartments(data);
+      setDepartments(data.data || []);
     } catch (e) {
       console.error('Failed to load departments', e);
+      setDepartments([]);
     }
   };
 
@@ -209,9 +211,10 @@ export default function App() {
     try {
       const res = await fetch('/api/complaints');
       const data = await res.json();
-      setComplaints(data);
+      setComplaints(data.data || []);
     } catch (e) {
       console.error('Failed to load complaints', e);
+      setComplaints([]);
     }
   };
 
@@ -219,9 +222,10 @@ export default function App() {
     try {
       const res = await fetch('/api/officers');
       const data = await res.json();
-      setOfficers(data);
+      setOfficers(data.data || []);
     } catch (e) {
       console.error('Failed to load officers', e);
+      setOfficers([]);
     }
   };
 
@@ -229,10 +233,15 @@ export default function App() {
     if (!currentUser) return;
     try {
       const res = await fetch(`/api/notifications?userId=${currentUser.id}`);
-      const data = await res.json();
-      setNotifications(data);
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data.data || []);
+      } else {
+        setNotifications([]);
+      }
     } catch (e) {
       console.error('Failed to load notifications', e);
+      setNotifications([]);
     }
   };
 
@@ -241,7 +250,11 @@ export default function App() {
       const res = await fetch(`/api/complaints/${id}`);
       if (res.ok) {
         const data = await res.json();
-        setSelectedComplaintDetails(data);
+        const complaint = data.data;
+        setSelectedComplaintDetails({
+          complaint: complaint,
+          history: complaint.statusHistory || []
+        });
       }
     } catch (e) {
       showToast('Failed to load complaint logs', 'error');
@@ -264,7 +277,9 @@ export default function App() {
           email: authEmail,
           role: authRole,
           name: authName,
-          phone: authPhone
+          phone: authPhone,
+          mode: authMode,
+          password: authPassword
         })
       });
       const data = await res.json();
@@ -278,12 +293,14 @@ export default function App() {
         setAuthEmail('');
         setAuthName('');
         setAuthPhone('');
+        setAuthPassword('');
         setOtpSentMessage(null);
         setActiveNav('dashboard');
+        setActiveView('dashboard');
         
         showToast(`Welcome back, ${data.user.name}! Authenticated successfully.`, 'success');
       } else {
-        showToast(data.error || 'Authentication failed', 'error');
+        showToast(data.message || data.error || 'Authentication failed', 'error');
       }
     } catch (err) {
       showToast('Network error during authentication', 'error');
@@ -515,7 +532,8 @@ export default function App() {
 
       const data = await res.json();
       if (res.ok) {
-        showToast(`Complaint lodged successfully: ID ${data.complaint.complaintId}`, 'success');
+        const complaint = data.data;
+        showToast(`Complaint lodged successfully: ID ${complaint.complaintId}`, 'success');
         
         // Reset complaint forms
         setLodgeTitle('');
@@ -533,7 +551,7 @@ export default function App() {
         fetchComplaints();
         
         // Track the newly created complaint
-        setSelectedComplaintId(data.complaint.id);
+        setSelectedComplaintId(complaint.id);
         setActiveNav('track');
       } else {
         showToast(data.error || 'Failed to lodge complaint', 'error');
@@ -2109,43 +2127,6 @@ export default function App() {
                     </p>
                   </div>
 
-                  {/* Profile Selection */}
-                  <div className="space-y-2">
-                    <label className="block text-[10px] font-extrabold text-[#27322B] uppercase tracking-wider">Select Profile:</label>
-                    <div className="grid grid-cols-3 gap-2.5">
-                      {[
-                        { id: 'citizen', title: 'Citizen', icon: Users, email: 'citizen@civiq.gov' },
-                        { id: 'officer', title: 'Officer', icon: Shield, email: 'officer@civiq.gov' },
-                        { id: 'admin', title: 'Admin', icon: Building2, email: 'admin@civiq.gov' }
-                      ].map((role) => {
-                        const Icon = role.icon;
-                        const isSelected = authRole === role.id;
-                        return (
-                          <button
-                            key={role.id}
-                            type="button"
-                            onClick={() => {
-                              setAuthRole(role.id as any);
-                              setAuthEmail(role.email);
-                              setAuthPassword('password123'); // Preset password for seamless sandbox testing
-                              showToast(`Loaded pre-seeded credentials for ${role.title}!`, 'info');
-                            }}
-                            className={`flex flex-col items-center gap-2 p-3 rounded-[14px] border text-center transition-all duration-200 cursor-pointer hover:border-[#6FB555]/60 hover:-translate-y-[1px] ${
-                              isSelected
-                                ? 'bg-[#EEF8E8] border-[#6FB555] shadow-sm shadow-[#6FB555]/15'
-                                : 'bg-white border-[#E3ECD9]'
-                            }`}
-                          >
-                            <Icon className={`w-4 h-4 ${isSelected ? 'text-[#437132]' : 'text-[#8B948C]'}`} />
-                            <span className={`text-[11px] font-extrabold ${isSelected ? 'text-[#27322B]' : 'text-[#8B948C]'}`}>
-                              {role.title}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
                   {/* LOGIN FORM */}
                   {authMode === 'login' && (
                     <form onSubmit={handleDirectAuth} className="space-y-4">
@@ -2220,6 +2201,20 @@ export default function App() {
                   {/* REGISTER CITIZEN PROFILE STATE */}
                   {authMode === 'register' && (
                     <form onSubmit={handleDirectAuth} className="space-y-4">
+                      {/* Role selection */}
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">Register As</label>
+                        <select
+                          value={authRole}
+                          onChange={(e) => setAuthRole(e.target.value as any)}
+                          className="w-full bg-white border border-[#D9E7D2] rounded-xl px-3 py-2.5 text-xs text-[#27322B] focus:outline-none focus:border-[#6FB555] focus:ring-4 focus:ring-[#6FB555]/10 transition-all"
+                        >
+                          <option value="citizen">Citizen</option>
+                          <option value="officer">Officer (Department Head / Staff)</option>
+                          <option value="admin">Administrator</option>
+                        </select>
+                      </div>
+
                       {/* Name input */}
                       <div className="space-y-1">
                         <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">Full Legal Name</label>
