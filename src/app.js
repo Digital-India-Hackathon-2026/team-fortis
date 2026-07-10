@@ -28,6 +28,14 @@ app.get('/', (_req, res) => {
   });
 });
 
+// Route rewriting compatibility for React frontend calling /api instead of /api/v1
+app.use('/api', (req, res, next) => {
+  if (!req.url.startsWith('/v1')) {
+    req.url = '/v1' + req.url;
+  }
+  next();
+}, apiRouter);
+
 app.use('/api/v1', apiRouter);
 
 app.use((_req, _res, next) => {
