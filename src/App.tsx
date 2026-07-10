@@ -11,7 +11,7 @@ import {
   Filter, Plus, UserPlus, FileEdit, HelpCircle, Phone, Mail, Check,
   Camera, ArrowRight, Activity, Trash2, CheckCircle, Mic, MicOff,
   Volume2, VolumeX, Sparkles, X, MessageSquare, Settings, Compass,
-  Star, Download, Share2, Award, ListFilter, AlertCircle
+  Star, Download, Share2, Award, ListFilter, AlertCircle, Eye, EyeOff
 } from 'lucide-react';
 import { 
   User, Department, Complaint, ComplaintStatus, 
@@ -94,14 +94,14 @@ export default function App() {
   const recognitionRef = useRef<any>(null);
 
   // Auth Form states
-  const [authMode, setAuthMode] = useState<'login' | 'otp' | 'register'>('login');
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [authEmail, setAuthEmail] = useState('');
   const [authName, setAuthName] = useState('');
   const [authPhone, setAuthPhone] = useState('');
   const [authRole, setAuthRole] = useState<'citizen' | 'officer' | 'admin'>('citizen');
-  const [otpCode, setOtpCode] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [otpSentMessage, setOtpSentMessage] = useState<string | null>(null);
-  const [otpReceived, setOtpReceived] = useState<string | null>(null);
   const [passkeyModalOpen, setPasskeyModalOpen] = useState(false);
   const [passkeyName, setPasskeyName] = useState('My Fingerprint Scanner');
 
@@ -249,40 +249,10 @@ export default function App() {
   };
 
   // Auth Handlers
-  const handleRequestOTP = async (e: React.FormEvent) => {
+  const handleDirectAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!authEmail) {
       showToast('Please enter a valid email address', 'error');
-      return;
-    }
-    
-    try {
-      const res = await fetch('/api/auth/otp/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: authEmail })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setOtpSentMessage(data.message);
-        if (data.otp) {
-          setOtpReceived(data.otp);
-          setOtpCode(data.otp);
-        }
-        setAuthMode('otp');
-        showToast('Verification code generated successfully', 'success');
-      } else {
-        showToast(data.error || 'Failed to dispatch OTP', 'error');
-      }
-    } catch (err) {
-      showToast('Connection to authentication server failed', 'error');
-    }
-  };
-
-  const handleVerifyOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!otpCode) {
-      showToast('Please enter the 6-digit verification code', 'error');
       return;
     }
 
@@ -292,10 +262,9 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: authEmail,
-          otp: otpCode,
+          role: authRole,
           name: authName,
-          phone: authPhone,
-          role: authRole
+          phone: authPhone
         })
       });
       const data = await res.json();
@@ -307,19 +276,17 @@ export default function App() {
         
         // Reset forms
         setAuthEmail('');
-        setOtpCode('');
         setAuthName('');
         setAuthPhone('');
         setOtpSentMessage(null);
-        setOtpReceived(null);
         setActiveNav('dashboard');
         
         showToast(`Welcome back, ${data.user.name}! Authenticated successfully.`, 'success');
       } else {
-        showToast(data.error || 'Authentication code rejected', 'error');
+        showToast(data.error || 'Authentication failed', 'error');
       }
     } catch (err) {
-      showToast('Network error verifying token', 'error');
+      showToast('Network error during authentication', 'error');
     }
   };
 
@@ -331,7 +298,7 @@ export default function App() {
     setAuthEmail(email);
     setAuthRole(role);
     setAuthMode('login');
-    showToast(`Quick-selected standard ${role} sandbox credentials. Click Request OTP to bypass manually!`, 'info');
+    showToast(`Quick-selected standard ${role} sandbox credentials. Click Log In to enter!`, 'info');
   };
 
   const handleLogOut = () => {
@@ -1991,7 +1958,7 @@ export default function App() {
         // ==========================================
         // MODERN GOVERNMENT AUTH PORTAL (LOGGED OUT)
         // ==========================================
-        <div className="min-h-screen w-full flex flex-col justify-between bg-slate-50">
+        <div className="min-h-screen w-full flex flex-col justify-between bg-[#FCFDFB] animate-fade-in">
           
           {/* Top Seal Header */}
           <div className="bg-slate-950 text-white py-2.5 px-6 border-b border-slate-800 text-[10px] flex justify-between items-center shrink-0">
@@ -2002,252 +1969,299 @@ export default function App() {
             </div>
             <button 
               onClick={() => setActiveView('landing')} 
-              className="text-[#6FB555] hover:text-[#569140] font-bold cursor-pointer text-[10px] uppercase"
+              className="text-[#6FB555] hover:text-[#569140] font-bold cursor-pointer text-[10px] uppercase transition-colors"
             >
               Back to Home
             </button>
           </div>
 
-          {/* Main Auth Grid */}
-          <div className="flex-1 flex items-center justify-center p-6">
-            <div className="bg-white border border-[#E3ECD9] rounded-2xl shadow-sm overflow-hidden w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12">
+          {/* Main Auth Container */}
+          <div className="flex-1 flex items-center justify-center p-6 sm:p-12">
+            <div className="bg-white border border-[#E3ECD9] rounded-[28px] shadow-2xl shadow-emerald-950/5 overflow-hidden w-full max-w-5xl flex flex-col lg:flex-row min-h-[620px]">
               
-              {/* Left Column: Mission branding values */}
-              <div className="lg:col-span-7 bg-[#437132] text-white p-8 sm:p-12 flex flex-col justify-between relative overflow-hidden">
-                <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none select-none">
+              {/* Left Column: Mission branding values (55% Width) */}
+              <div className="lg:w-[55%] bg-gradient-to-b from-[#4F8A45] to-[#437132] text-white p-8 sm:p-12 flex flex-col justify-between relative overflow-hidden shrink-0">
+                
+                {/* Hyderabad skyline watermark (opacity 5-10%) */}
+                <svg className="absolute bottom-0 left-0 w-full h-40 opacity-[0.08] pointer-events-none select-none" viewBox="0 0 800 200" fill="currentColor">
+                  <path d="M 100 200 L 100 80 L 120 80 L 120 50 L 110 50 L 110 20 L 120 20 L 120 10 L 130 10 L 130 20 L 140 20 L 140 50 L 130 50 L 130 80 L 210 80 L 210 50 L 200 50 L 200 20 L 210 20 L 210 10 L 220 10 L 220 20 L 230 20 L 230 50 L 220 50 L 220 80 L 240 80 L 240 200 Z" />
+                  <rect x="140" y="100" width="60" height="100" rx="30" />
+                  <path d="M 300 200 L 300 110 L 320 90 L 380 90 L 400 110 L 400 200 Z" />
+                  <circle cx="350" cy="140" r="20" />
+                  <path d="M 460 200 L 460 60 L 480 40 L 520 40 L 540 60 L 540 200 Z" />
+                  <path d="M 580 200 L 580 90 H 700 V 200 Z" />
+                  <rect x="600" y="110" width="10" height="20" />
+                  <rect x="620" y="110" width="10" height="20" />
+                  <rect x="640" y="110" width="10" height="20" />
+                  <rect x="660" y="110" width="10" height="20" />
+                </svg>
+
+                {/* Faint Logo Watermark in bottom-right */}
+                <div className="absolute -right-10 -bottom-10 opacity-[0.04] pointer-events-none select-none">
                   <Building2 className="w-80 h-80 text-white" />
                 </div>
 
-                <div className="space-y-6 relative z-10">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-white text-[#437132] p-2 rounded-lg flex items-center justify-center shadow">
-                      <Building2 className="w-6 h-6" />
+                <div className="space-y-12 relative z-10">
+                  {/* Logo */}
+                  <div className="flex items-center gap-2.5">
+                    <div className="bg-white p-1 rounded-xl flex items-center justify-center shadow-lg">
+                      <img src={logo} alt="CivicAI Logo" className="w-10 h-10 object-contain rounded-lg" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-extrabold tracking-tight">CivicAI</h2>
-                      <p className="text-[10px] uppercase font-bold tracking-widest text-[#C3E39D]">Grievance network system</p>
+                      <h2 className="text-xl font-black tracking-tight text-white">CivicAI</h2>
+                      <p className="text-[9px] uppercase font-bold tracking-widest text-[#C3E39D]">Grievance Network System</p>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <h3 className="text-3xl font-extrabold tracking-tight leading-tight">
+                  {/* Heading & Description */}
+                  <div className="space-y-6 pr-4">
+                    <h3 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight text-white" style={{ fontFamily: "'Poppins', sans-serif" }}>
                       Empowering Citizens with Smart Vision Governance.
                     </h3>
-                    <p className="text-xs text-[#EEF8E8] leading-relaxed font-medium">
-                      CivicAI directly bridges vigilant citizens and municipal boards. Take a photo of infrastructure defects — the AI vision model parses priority indicators, suggests target boards, and coordinates real-time dispatch checks.
+                    <p className="text-sm text-white/80 leading-relaxed font-medium">
+                      Capture infrastructure issues instantly with AI-powered verification, smart categorization, and real-time grievance tracking. CivicAI helps citizens and government departments resolve issues faster through intelligent automation.
                     </p>
                   </div>
                 </div>
 
-                {/* Seeding credentials selector panel */}
-                <div className="mt-12 bg-[#569140]/80 rounded-xl p-5 border border-[#C3E39D] relative z-10 space-y-3.5">
-                  <h4 className="text-[10px] uppercase font-extrabold tracking-wider text-amber-400 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-emerald-400" /> Sandbox Command Centre
-                  </h4>
-                  <p className="text-[11px] text-[#EEF8E8] leading-relaxed">
-                    Instantly load pre-seeded developer credentials to inspect multi-role dashboard components:
-                  </p>
-                  <div className="grid grid-cols-3 gap-2">
-                    <button 
-                      onClick={() => triggerSandboxAccount('citizen')}
-                      className="bg-[#437132]/60 hover:bg-[#437132] border border-[#C3E39D]/30 py-2 rounded-lg text-center transition cursor-pointer"
-                    >
-                      <p className="text-xs font-bold text-white">Citizen</p>
-                      <p className="text-[9px] text-amber-400 font-semibold mt-0.5">Amit Patel</p>
-                    </button>
-                    <button 
-                      onClick={() => triggerSandboxAccount('officer')}
-                      className="bg-[#437132]/60 hover:bg-[#437132] border border-[#C3E39D]/30 py-2 rounded-lg text-center transition cursor-pointer"
-                    >
-                      <p className="text-xs font-bold text-white">Officer</p>
-                      <p className="text-[9px] text-amber-400 font-semibold mt-0.5">Rajesh Kumar</p>
-                    </button>
-                    <button 
-                      onClick={() => triggerSandboxAccount('admin')}
-                      className="bg-[#437132]/60 hover:bg-[#437132] border border-[#C3E39D]/30 py-2 rounded-lg text-center transition cursor-pointer"
-                    >
-                      <p className="text-xs font-bold text-white">Admin</p>
-                      <p className="text-[9px] text-amber-400 font-semibold mt-0.5">Sonia Sharma</p>
-                    </button>
-                  </div>
+                {/* Subtext Grid */}
+                <div className="relative z-10 pt-12 text-[10px] text-white/60 font-bold flex gap-4">
+                  <span>✓ Smart Dispatch</span>
+                  <span>✓ Vision Verification</span>
+                  <span>✓ 100% Transparent</span>
                 </div>
               </div>
 
-              {/* Right Column: Secure Form inputs */}
-              <div className="lg:col-span-5 p-8 sm:p-10 flex flex-col justify-center space-y-6 bg-white">
+              {/* Right Column: Secure Form inputs (45% Width) */}
+              <div className="lg:w-[45%] p-8 sm:p-12 flex flex-col justify-between bg-white shrink-0">
                 
-                {/* Mode Select Header */}
-                <div className="flex border-b border-slate-100 pb-3">
-                  <button 
-                    onClick={() => { setAuthMode('login'); setOtpSentMessage(null); }}
-                    className={`font-bold text-xs tracking-wider uppercase transition-all pb-3 mr-6 cursor-pointer ${
-                      authMode !== 'register' ? 'border-b-2 border-[#569140] text-slate-900' : 'text-slate-400'
-                    }`}
-                  >
-                    Grievance Login
-                  </button>
-                  <button 
-                    onClick={() => { setAuthMode('register'); setOtpSentMessage(null); }}
-                    className={`font-bold text-xs tracking-wider uppercase transition-all pb-3 cursor-pointer ${
-                      authMode === 'register' ? 'border-b-2 border-[#569140] text-slate-900' : 'text-slate-400'
-                    }`}
-                  >
-                    Register Profile
-                  </button>
-                </div>
+                {/* Content wrapper */}
+                <div className="space-y-8 my-auto">
+                  
+                  {/* Mode Select Header (Tabs) */}
+                  <div className="flex border-b border-slate-100 pb-3">
+                    <button 
+                      onClick={() => { setAuthMode('login'); setOtpSentMessage(null); }}
+                      className={`font-extrabold text-xs tracking-wider uppercase transition-all pb-3 mr-6 cursor-pointer border-b-2 ${
+                        authMode !== 'register' 
+                          ? 'border-[#437132] text-[#437132]' 
+                          : 'border-transparent text-[#9CA3AF]'
+                      }`}
+                    >
+                      Grievance Login
+                    </button>
+                    <button 
+                      onClick={() => { setAuthMode('register'); setOtpSentMessage(null); }}
+                      className={`font-extrabold text-xs tracking-wider uppercase transition-all pb-3 cursor-pointer border-b-2 ${
+                        authMode === 'register' 
+                          ? 'border-[#437132] text-[#437132]' 
+                          : 'border-transparent text-[#9CA3AF]'
+                      }`}
+                    >
+                      Register Profile
+                    </button>
+                  </div>
 
-                {/* LOGIN STATE */}
-                {authMode === 'login' && (
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="font-extrabold text-slate-900 text-base">Secure Gateway Portal</h3>
-                      <p className="text-xs text-slate-500 mt-1">Authenticate using a passwordless OTP verification system.</p>
+                  {/* Headings */}
+                  <div className="space-y-1.5">
+                    <h3 className="font-extrabold text-[#27322B] text-xl tracking-tight">Secure Gateway Portal</h3>
+                    <p className="text-xs text-[#5F6B63]">
+                      Authenticate securely to access the CivicAI grievance management platform.
+                    </p>
+                  </div>
+
+                  {/* Profile Selection */}
+                  <div className="space-y-2">
+                    <label className="block text-[10px] font-extrabold text-[#27322B] uppercase tracking-wider">Select Profile:</label>
+                    <div className="grid grid-cols-3 gap-2.5">
+                      {[
+                        { id: 'citizen', title: 'Citizen', icon: Users, email: 'citizen@civiq.gov' },
+                        { id: 'officer', title: 'Officer', icon: Shield, email: 'officer@civiq.gov' },
+                        { id: 'admin', title: 'Admin', icon: Building2, email: 'admin@civiq.gov' }
+                      ].map((role) => {
+                        const Icon = role.icon;
+                        const isSelected = authRole === role.id;
+                        return (
+                          <button
+                            key={role.id}
+                            type="button"
+                            onClick={() => {
+                              setAuthRole(role.id as any);
+                              setAuthEmail(role.email);
+                              setAuthPassword('password123'); // Preset password for seamless sandbox testing
+                              showToast(`Loaded pre-seeded credentials for ${role.title}!`, 'info');
+                            }}
+                            className={`flex flex-col items-center gap-2 p-3 rounded-[14px] border text-center transition-all duration-200 cursor-pointer hover:border-[#6FB555]/60 hover:-translate-y-[1px] ${
+                              isSelected
+                                ? 'bg-[#EEF8E8] border-[#6FB555] shadow-sm shadow-[#6FB555]/15'
+                                : 'bg-white border-[#E3ECD9]'
+                            }`}
+                          >
+                            <Icon className={`w-4 h-4 ${isSelected ? 'text-[#437132]' : 'text-[#8B948C]'}`} />
+                            <span className={`text-[11px] font-extrabold ${isSelected ? 'text-[#27322B]' : 'text-[#8B948C]'}`}>
+                              {role.title}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
+                  </div>
 
-                    <form onSubmit={handleRequestOTP} className="space-y-4">
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">Official / Citizen Email</label>
+                  {/* LOGIN FORM */}
+                  {authMode === 'login' && (
+                    <form onSubmit={handleDirectAuth} className="space-y-4">
+                      {/* Email address field */}
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">Email Address</label>
                         <div className="relative">
-                          <Mail className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
+                          <Mail className="absolute left-3 top-3 text-[#8B948C] w-4 h-4" />
                           <input 
                             type="email" 
                             required
                             value={authEmail}
                             onChange={(e) => setAuthEmail(e.target.value)}
                             placeholder="e.g. citizen@civiq.gov"
-                            className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-[#6FB555] focus:bg-white"
+                            className="w-full bg-white border border-[#D9E7D2] rounded-xl pl-9 pr-4 py-2.5 text-xs text-[#27322B] placeholder-[#8B948C] focus:outline-none focus:border-[#6FB555] focus:ring-4 focus:ring-[#6FB555]/10 transition-all"
                           />
                         </div>
                       </div>
 
-                      <button 
-                        type="submit"
-                        className="w-full bg-[#569140] hover:bg-[#437132] text-white font-extrabold text-xs py-3 px-4 rounded-lg shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
-                        <Send className="w-4 h-4" />
-                        Request Access Token Code
-                      </button>
-                    </form>
-                  </div>
-                )}
-
-                {/* OTP VERIFICATION STATE */}
-                {authMode === 'otp' && (
-                  <div className="space-y-4">
-                    <div>
-                      <span className="bg-amber-100 text-amber-800 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">Code Dispatched</span>
-                      <h3 className="font-extrabold text-slate-900 text-base mt-2">Enter Verification Code</h3>
-                      <p className="text-xs text-slate-500 mt-1">A verification code was dispatched to: <span className="font-bold text-slate-800">{authEmail}</span></p>
-                    </div>
-
-                    {otpSentMessage && (
-                      <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs leading-relaxed border border-emerald-150 font-medium">
-                        {otpSentMessage}
-                      </div>
-                    )}
-
-                    <form onSubmit={handleVerifyOTP} className="space-y-4">
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">6-Digit Access Token</label>
-                        <input 
-                          type="text" 
-                          required
-                          maxLength={6}
-                          value={otpCode}
-                          onChange={(e) => setOtpCode(e.target.value)}
-                          placeholder="123456"
-                          className="w-full bg-slate-50 border border-slate-200 rounded-lg py-2.5 text-center text-lg font-bold tracking-widest focus:outline-none focus:border-[#6FB555] focus:bg-white"
-                        />
+                      {/* Password field */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-center">
+                          <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">Password</label>
+                          <button type="button" className="text-[10px] font-extrabold text-[#5F6B63] hover:text-[#437132] transition-colors">
+                            Forgot Password?
+                          </button>
+                        </div>
+                        <div className="relative">
+                          <Shield className="absolute left-3 top-3 text-[#8B948C] w-4 h-4" />
+                          <input 
+                            type={showPassword ? "text" : "password"}
+                            required
+                            value={authPassword}
+                            onChange={(e) => setAuthPassword(e.target.value)}
+                            placeholder="••••••••"
+                            className="w-full bg-white border border-[#D9E7D2] rounded-xl pl-9 pr-10 py-2.5 text-xs text-[#27322B] placeholder-[#8B948C] focus:outline-none focus:border-[#6FB555] focus:ring-4 focus:ring-[#6FB555]/10 transition-all"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-3 text-[#8B948C] hover:text-[#27322B] transition-colors"
+                          >
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
                       </div>
 
-                      <div className="flex gap-2">
-                        <button 
-                          type="button" 
-                          onClick={() => { setAuthMode('login'); setOtpSentMessage(null); }}
-                          className="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-3 px-4 rounded-lg transition cursor-pointer"
-                        >
-                          Change
-                        </button>
+                      {/* Submit & Action Buttons */}
+                      <div className="space-y-2 pt-2">
                         <button 
                           type="submit"
-                          className="w-2/3 bg-[#569140] hover:bg-[#437132] text-white font-extrabold text-sm py-3 px-4 rounded-lg shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer"
+                          className="w-full bg-[#6FB555] hover:bg-[#569140] text-white font-extrabold text-xs py-3 px-4 rounded-[14px] shadow-sm hover:shadow-md hover:-translate-y-[1px] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                         >
-                          <CheckCircle2 className="w-4 h-4" />
-                          Verify & Log In
+                          <LogIn className="w-4 h-4" />
+                          Log In
+                        </button>
+                        
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            setAuthEmail('');
+                            setAuthPassword('');
+                          }}
+                          className="w-full bg-white border border-[#6FB555] text-[#569140] hover:bg-[#EEF8E8]/50 font-extrabold text-xs py-2.5 px-4 rounded-[14px] transition-all flex items-center justify-center cursor-pointer"
+                        >
+                          Reset Form
                         </button>
                       </div>
                     </form>
-                  </div>
-                )}
+                  )}
 
-                {/* REGISTER CITIZEN PROFILE STATE */}
-                {authMode === 'register' && (
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="font-extrabold text-slate-900 text-base">Register Citizen Profile</h3>
-                      <p className="text-xs text-slate-500 mt-1">Create an official profile to log and track neighborhood concerns.</p>
-                    </div>
-
-                    <form onSubmit={handleRequestOTP} className="space-y-4">
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">Full Legal Name</label>
+                  {/* REGISTER CITIZEN PROFILE STATE */}
+                  {authMode === 'register' && (
+                    <form onSubmit={handleDirectAuth} className="space-y-4">
+                      {/* Name input */}
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">Full Legal Name</label>
                         <input 
                           type="text" 
                           required
                           value={authName}
                           onChange={(e) => setAuthName(e.target.value)}
                           placeholder="Rajesh Patil"
-                          className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#6FB555] focus:bg-white"
+                          className="w-full bg-white border border-[#D9E7D2] rounded-xl px-3 py-2.5 text-xs text-[#27322B] placeholder-[#8B948C] focus:outline-none focus:border-[#6FB555] focus:ring-4 focus:ring-[#6FB555]/10 transition-all"
                         />
                       </div>
 
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">Email address</label>
+                      {/* Email Address */}
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">Email Address</label>
                         <input 
                           type="email" 
                           required
                           value={authEmail}
                           onChange={(e) => setAuthEmail(e.target.value)}
                           placeholder="rajesh@email.com"
-                          className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#6FB555] focus:bg-white"
+                          className="w-full bg-white border border-[#D9E7D2] rounded-xl px-3 py-2.5 text-xs text-[#27322B] placeholder-[#8B948C] focus:outline-none focus:border-[#6FB555] focus:ring-4 focus:ring-[#6FB555]/10 transition-all"
                         />
                       </div>
 
+                      {/* Phone & Password row */}
                       <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">Mobile Number</label>
+                        <div className="space-y-1">
+                          <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">Mobile Number</label>
                           <input 
                             type="tel" 
                             required
                             value={authPhone}
                             onChange={(e) => setAuthPhone(e.target.value)}
                             placeholder="+91 99999 88888"
-                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#6FB555]"
+                            className="w-full bg-white border border-[#D9E7D2] rounded-xl px-3 py-2.5 text-xs text-[#27322B] placeholder-[#8B948C] focus:outline-none focus:border-[#6FB555] focus:ring-4 focus:ring-[#6FB555]/10 transition-all"
                           />
                         </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">Profile Role</label>
-                          <select 
-                            value={authRole}
-                            onChange={(e) => setAuthRole(e.target.value as any)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none"
-                          >
-                            <option value="citizen">Citizen Representative</option>
-                            <option value="officer">Department Officer</option>
-                            <option value="admin">Central Administrator</option>
-                          </select>
+                        <div className="space-y-1">
+                          <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">Password</label>
+                          <input 
+                            type="password" 
+                            required
+                            value={authPassword}
+                            onChange={(e) => setAuthPassword(e.target.value)}
+                            placeholder="Create Password"
+                            className="w-full bg-white border border-[#D9E7D2] rounded-xl px-3 py-2.5 text-xs text-[#27322B] placeholder-[#8B948C] focus:outline-none focus:border-[#6FB555] focus:ring-4 focus:ring-[#6FB555]/10 transition-all"
+                          />
                         </div>
                       </div>
 
-                      <button 
-                        type="submit"
-                        className="w-full bg-[#569140] hover:bg-[#437132] text-white font-extrabold text-xs py-3 px-4 rounded-lg shadow-sm transition cursor-pointer"
-                      >
-                        Register with OTP Verification
-                      </button>
+                      {/* Buttons */}
+                      <div className="space-y-2 pt-2">
+                        <button 
+                          type="submit"
+                          className="w-full bg-[#6FB555] hover:bg-[#569140] text-white font-extrabold text-xs py-3 px-4 rounded-[14px] shadow-sm hover:shadow-md hover:-translate-y-[1px] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          Register Profile
+                        </button>
+                        
+                        <button 
+                          type="button"
+                          onClick={() => setAuthMode('login')}
+                          className="w-full bg-white border border-[#6FB555] text-[#569140] hover:bg-[#EEF8E8]/50 font-extrabold text-xs py-2.5 px-4 rounded-[14px] transition-all flex items-center justify-center cursor-pointer"
+                        >
+                          Already have an account? Log In
+                        </button>
+                      </div>
                     </form>
-                  </div>
-                )}
+                  )}
+
+                </div>
+
+                {/* Bottom Trust Badges Section */}
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-6 border-t border-slate-100 text-[10px] text-[#5F6B63] font-bold">
+                  <div className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-[#6FB555]" /> Secure Authentication</div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-[#6FB555]" /> Government Verified</div>
+                  <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-[#6FB555]" /> AI Powered Grid</div>
+                  <div className="flex items-center gap-1.5"><Activity className="w-3.5 h-3.5 text-[#6FB555]" /> Encrypted Session</div>
+                </div>
 
               </div>
 
