@@ -1027,7 +1027,7 @@ export default function App() {
                                 <tr key={item.id} className="hover:bg-hover-bg transition-colors">
                                   <td className="p-3.5 font-bold text-primary-text">{item.complaintId}</td>
                                   <td className="p-3.5 text-secondary-text">{item.category}</td>
-                                  <td className="p-3.5 text-muted-text truncate max-w-48">{item.address || 'Central'}</td>
+                                  <td className="p-3.5 text-muted-text truncate max-w-48">{item.department?.name || 'Unassigned'}</td>
                                   <td className="p-3.5">
                                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
                                       item.status === 'Resolved' ? 'bg-[#E8F6EC] text-[#2E8B57] border border-[#C9DEBE]' :

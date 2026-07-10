@@ -27,14 +27,14 @@ export class ComplaintService {
     let resolvedDepartmentId = data.departmentId || null;
     if (!resolvedDepartmentId) {
       const matchSource = `${data.departmentName || ''} ${data.category || ''} ${data.title || ''}`.toLowerCase();
-      if (matchSource.includes('road') || matchSource.includes('pothole') || matchSource.includes('infra')) {
-        resolvedDepartmentId = 'dept-roads';
-      } else if (matchSource.includes('sanitat') || matchSource.includes('garbage') || matchSource.includes('waste') || matchSource.includes('litter')) {
-        resolvedDepartmentId = 'dept-sanitation';
-      } else if (matchSource.includes('water') || matchSource.includes('sewer') || matchSource.includes('drain') || matchSource.includes('leak')) {
+      if (matchSource.includes('water') || matchSource.includes('sewer') || matchSource.includes('drain') || matchSource.includes('leak') || matchSource.includes('flood') || matchSource.includes('waterlog')) {
         resolvedDepartmentId = 'dept-water';
-      } else if (matchSource.includes('electr') || matchSource.includes('power') || matchSource.includes('wire') || matchSource.includes('current') || matchSource.includes('light')) {
+      } else if (matchSource.includes('sanitat') || matchSource.includes('garbage') || matchSource.includes('waste') || matchSource.includes('litter') || matchSource.includes('dump') || matchSource.includes('hygeine') || matchSource.includes('smell') || matchSource.includes('odour') || matchSource.includes('mosquito')) {
+        resolvedDepartmentId = 'dept-sanitation';
+      } else if (matchSource.includes('electr') || matchSource.includes('power') || matchSource.includes('wire') || matchSource.includes('current') || matchSource.includes('light') || matchSource.includes('outage')) {
         resolvedDepartmentId = 'dept-electricity';
+      } else if (matchSource.includes('road') || matchSource.includes('pothole') || matchSource.includes('infra') || matchSource.includes('pavement') || matchSource.includes('sidewalk') || matchSource.includes('footpath')) {
+        resolvedDepartmentId = 'dept-roads';
       }
     }
 
