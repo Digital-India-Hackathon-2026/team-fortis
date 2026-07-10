@@ -43,7 +43,7 @@ export default function App() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   
   // Navigation
-  const [activeNav, setActiveNav] = useState<'dashboard' | 'lodge' | 'my-complaints' | 'track' | 'road-explorer' | 'ward-health' | 'ai-assistant' | 'notifications' | 'settings' | 'officer-management' | 'my-profile'>('dashboard');
+  const [activeNav, setActiveNav] = useState<'dashboard' | 'lodge' | 'my-complaints' | 'track' | 'road-explorer' | 'ward-health' | 'ai-assistant' | 'notifications' | 'contact-us' | 'officer-management' | 'my-profile'>('dashboard');
   const [selectedComplaintId, setSelectedComplaintId] = useState<string | null>(null);
   const [selectedComplaintDetails, setSelectedComplaintDetails] = useState<{ complaint: Complaint, history: any[] } | null>(null);
   
@@ -694,7 +694,7 @@ export default function App() {
                     { id: 'track', tKey: 'sidebar.track', icon: Clock },
                     { id: 'road-explorer', tKey: 'sidebar.roadExplorer', icon: Compass },
                     { id: 'ai-assistant', tKey: 'sidebar.aiAssistant', icon: Sparkles },
-                    { id: 'settings', tKey: 'sidebar.settings', icon: Settings },
+                    { id: 'contact-us', tKey: 'sidebar.contactUs', icon: Mail },
                   ];
 
                   if (isOfficer) {
@@ -702,7 +702,7 @@ export default function App() {
                       { id: 'dashboard', tKey: 'sidebar.dashboard', icon: BarChart3 },
                       { id: 'road-explorer', tKey: 'sidebar.roadExplorer', icon: Compass },
                       { id: 'my-profile', tKey: 'sidebar.myProfile', icon: Users },
-                      { id: 'settings', tKey: 'sidebar.settings', icon: Settings },
+                      { id: 'contact-us', tKey: 'sidebar.contactUs', icon: Mail },
                     ];
                   } else if (isAdmin) {
                     navItems = [
@@ -710,7 +710,7 @@ export default function App() {
                       { id: 'officer-management', tKey: 'sidebar.officerManagement', icon: Users },
                       { id: 'road-explorer', tKey: 'sidebar.roadExplorer', icon: Compass },
                       { id: 'my-profile', tKey: 'sidebar.myProfile', icon: Users },
-                      { id: 'settings', tKey: 'sidebar.settings', icon: Settings },
+                      { id: 'contact-us', tKey: 'sidebar.contactUs', icon: Mail },
                     ];
                   }
 
@@ -1911,6 +1911,7 @@ export default function App() {
                       if (activeNav === 'road-explorer') return t('sidebar.roadExplorer');
                       if (activeNav === 'ward-health') return t('sidebar.wardHealth');
                       if (activeNav === 'ai-assistant') return t('sidebar.aiAssistant');
+                      if (activeNav === 'contact-us') return t('sidebar.contactUs');
                       return t(`sidebar.${activeNav}`);
                     })()} {t("other.placeholder.title")}
                   </h3>
