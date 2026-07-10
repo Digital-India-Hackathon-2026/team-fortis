@@ -79,6 +79,9 @@ export class ComplaintService {
     if (filters.departmentId) {
       whereClause.departmentId = filters.departmentId;
     }
+    if (filters.officerId) {
+      whereClause.officerId = filters.officerId;
+    }
     if (filters.search) {
       whereClause.OR = [
         { title: { contains: filters.search, mode: 'insensitive' } },

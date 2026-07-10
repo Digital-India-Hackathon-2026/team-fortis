@@ -22,6 +22,7 @@ import {
   Tooltip, Legend, PieChart, Pie, Cell 
 } from 'recharts';
 import InteractiveMap from './components/InteractiveMap';
+import { translations } from './utils/translations';
 // @ts-ignore
 import logo from './logo.png';
 // @ts-ignore
@@ -42,10 +43,22 @@ export default function App() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   
   // Navigation
-  const [activeNav, setActiveNav] = useState<'dashboard' | 'lodge' | 'my-complaints' | 'track' | 'road-explorer' | 'ward-health' | 'ai-assistant' | 'notifications' | 'settings'>('dashboard');
+  const [activeNav, setActiveNav] = useState<'dashboard' | 'lodge' | 'my-complaints' | 'track' | 'road-explorer' | 'ward-health' | 'ai-assistant' | 'notifications' | 'settings' | 'officer-management' | 'my-profile'>('dashboard');
   const [selectedComplaintId, setSelectedComplaintId] = useState<string | null>(null);
   const [selectedComplaintDetails, setSelectedComplaintDetails] = useState<{ complaint: Complaint, history: any[] } | null>(null);
-  const [language, setLanguage] = useState<'en' | 'hi' | 'te'>('en');
+  
+  const [language, setLanguage] = useState<'en' | 'hi' | 'te'>(() => {
+    return (localStorage.getItem('civiq_lang') as 'en' | 'hi' | 'te') || 'en';
+  });
+  
+  useEffect(() => {
+    localStorage.setItem('civiq_lang', language);
+  }, [language]);
+
+  const t = (key: string): string => {
+    return translations[language]?.[key] || translations['en']?.[key] || key;
+  };
+
   const [searchGlobal, setSearchGlobal] = useState('');
   
   // Toast notifications
@@ -186,6 +199,7 @@ export default function App() {
   useEffect(() => {
     if (currentUser) {
       fetchNotifications();
+      fetchComplaints();
     }
   }, [currentUser]);
 
@@ -209,7 +223,14 @@ export default function App() {
 
   const fetchComplaints = async () => {
     try {
-      const res = await fetch('/api/complaints');
+      const isOfficerAccount = currentUser && (
+        currentUser.role === 'OFFICER' || 
+        currentUser.role === 'DEPT_HEAD' || 
+        currentUser.role === 'officer' || 
+        currentUser.role === 'dept_head'
+      );
+      const url = isOfficerAccount ? `/api/complaints?officerId=${currentUser.id}` : '/api/complaints';
+      const res = await fetch(url);
       const data = await res.json();
       setComplaints(data.data || []);
     } catch (e) {
@@ -265,7 +286,7 @@ export default function App() {
   const handleDirectAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!authEmail) {
-      showToast('Please enter a valid email address', 'error');
+      showToast(t('toast.validation.email'), 'error');
       return;
     }
 
@@ -298,7 +319,7 @@ export default function App() {
         setActiveNav('dashboard');
         setActiveView('dashboard');
         
-        showToast(`Welcome back, ${data.user.name}! Authenticated successfully.`, 'success');
+        showToast(`${t('toast.success.login')}`, 'success');
       } else {
         showToast(data.message || data.error || 'Authentication failed', 'error');
       }
@@ -315,7 +336,7 @@ export default function App() {
     setAuthEmail(email);
     setAuthRole(role);
     setAuthMode('login');
-    showToast(`Quick-selected standard ${role} sandbox credentials. Click Log In to enter!`, 'info');
+    showToast(t('toast.success.otp'), 'info');
   };
 
   const handleLogOut = () => {
@@ -323,7 +344,7 @@ export default function App() {
     localStorage.removeItem('civiq_token');
     setCurrentUser(null);
     setAuthToken(null);
-    showToast('Logged out successfully', 'info');
+    showToast(t('toast.info.logout'), 'info');
   };
 
   // Image Upload Evidence Picker
@@ -342,7 +363,7 @@ export default function App() {
   // AI Assistant vision scanning
   const handleRunAIScan = async () => {
     if (!lodgeImage) {
-      showToast('Please capture or select a complaint image first', 'error');
+      showToast(t('toast.validation.image'), 'error');
       return;
     }
 
@@ -498,11 +519,11 @@ export default function App() {
     e.preventDefault();
     if (!currentUser) return;
     if (!lodgeTitle) {
-      showToast('Please provide a summary title', 'error');
+      showToast(t('toast.validation.title'), 'error');
       return;
     }
     if (!lodgeImage) {
-      showToast('An image is required to back the complaint', 'error');
+      showToast(t('toast.validation.image'), 'error');
       return;
     }
 
@@ -564,7 +585,7 @@ export default function App() {
   // Submit Feedback / Review
   const handleSubmitFeedback = async () => {
     if (!selectedComplaintId) return;
-    showToast(`Feedback submitted successfully with rating: ${citizenRating} Stars!`, 'success');
+    showToast(`${t('toast.success.feedback')} (${citizenRating} Stars!)`, 'success');
     setCitizenRating(0);
     setCitizenFeedbackText('');
     fetchComplaintDetails(selectedComplaintId);
@@ -648,84 +669,129 @@ export default function App() {
                   className="h-12 w-12 object-contain shrink-0" 
                 />
                 <div>
-                  <h1 className="text-lg font-bold tracking-tight text-primary-text leading-tight">CivicAI</h1>
-                  <p className="text-[11px] text-secondary-text font-medium uppercase tracking-wider">National Grievance Grid</p>
-                  <p className="text-[9px] text-primary-hover font-semibold mt-0.5 leading-none">GoI digital network</p>
+                  <h1 className="text-lg font-bold tracking-tight text-primary-text leading-tight">{t("landing.title")}</h1>
+                  <p className="text-[11px] text-secondary-text font-medium uppercase tracking-wider">{t("auth.mission.sub")}</p>
+                  <p className="text-[9px] text-primary-hover font-semibold mt-0.5 leading-none">{t("dashboard.banner.badge")}</p>
                 </div>
               </div>
 
               {/* Navigation Items */}
               <nav className="p-4 space-y-1.5">
-                {[
-                  { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
-                  { id: 'lodge', label: 'Lodge Complaint', icon: FileEdit },
-                  { id: 'my-complaints', label: 'My Complaints', icon: FileText },
-                  { id: 'track', label: 'Track Complaint', icon: Clock },
-                  { id: 'road-explorer', label: 'Road Explorer', icon: Compass },
-                  { id: 'ward-health', label: 'Ward Health', icon: Activity },
-                  { id: 'ai-assistant', label: 'AI Assistant', icon: Sparkles },
-                  { id: 'notifications', label: 'Notifications', icon: Bell, badgeCount: notifications.filter(n => !n.isRead).length },
-                  { id: 'settings', label: 'Settings', icon: Settings },
-                ].map(item => {
-                  const IconComp = item.icon;
-                  const isActive = activeNav === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        setActiveNav(item.id as any);
-                        if (item.id === 'my-complaints') {
-                          setStatusFilter('All');
-                        }
-                      }}
-                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${
-                        isActive 
-                          ? 'bg-surface-green text-primary-text border-l-4 border-primary-green' 
-                          : 'text-secondary-text hover:bg-hover-bg hover:text-primary-text'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <IconComp className={`w-4.5 h-4.5 ${isActive ? 'text-primary-hover' : 'text-muted-text'}`} />
-                        <span>{item.label}</span>
-                      </div>
-                      {item.badgeCount && item.badgeCount > 0 ? (
-                        <span className="bg-rose-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
-                          {item.badgeCount}
-                        </span>
-                      ) : null}
-                    </button>
+                {(() => {
+                  const isOfficer = currentUser && (
+                    currentUser.role === 'OFFICER' || 
+                    currentUser.role === 'DEPT_HEAD' || 
+                    currentUser.role === 'officer' || 
+                    currentUser.role === 'dept_head'
                   );
-                })}
+                  const isAdmin = currentUser && (
+                    currentUser.role === 'ADMIN' || 
+                    currentUser.role === 'admin'
+                  );
+                  
+                  let navItems = [
+                    { id: 'dashboard', tKey: 'sidebar.dashboard', icon: BarChart3 },
+                    { id: 'lodge', tKey: 'sidebar.lodge', icon: FileEdit },
+                    { id: 'my-complaints', tKey: 'sidebar.myComplaints', icon: FileText },
+                    { id: 'track', tKey: 'sidebar.track', icon: Clock },
+                    { id: 'road-explorer', tKey: 'sidebar.roadExplorer', icon: Compass },
+                    { id: 'ward-health', tKey: 'sidebar.wardHealth', icon: Activity },
+                    { id: 'ai-assistant', tKey: 'sidebar.aiAssistant', icon: Sparkles },
+                    { id: 'notifications', tKey: 'sidebar.notifications', icon: Bell, badgeCount: notifications.filter(n => !n.isRead).length },
+                    { id: 'settings', tKey: 'sidebar.settings', icon: Settings },
+                  ];
+
+                  if (isOfficer) {
+                    navItems = [
+                      { id: 'dashboard', tKey: 'sidebar.dashboard', icon: BarChart3 },
+                      { id: 'my-complaints', tKey: 'sidebar.assignedComplaints', icon: FileText },
+                      { id: 'road-explorer', tKey: 'sidebar.roadExplorer', icon: Compass },
+                      { id: 'notifications', tKey: 'sidebar.notifications', icon: Bell, badgeCount: notifications.filter(n => !n.isRead).length },
+                      { id: 'my-profile', tKey: 'sidebar.myProfile', icon: Users },
+                      { id: 'settings', tKey: 'sidebar.settings', icon: Settings },
+                    ];
+                  } else if (isAdmin) {
+                    navItems = [
+                      { id: 'dashboard', tKey: 'sidebar.dashboard', icon: BarChart3 },
+                      { id: 'my-complaints', tKey: 'sidebar.complaintManagement', icon: FileText },
+                      { id: 'officer-management', tKey: 'sidebar.officerManagement', icon: Users },
+                      { id: 'road-explorer', tKey: 'sidebar.roadExplorer', icon: Compass },
+                      { id: 'notifications', tKey: 'sidebar.notifications', icon: Bell, badgeCount: notifications.filter(n => !n.isRead).length },
+                      { id: 'my-profile', tKey: 'sidebar.myProfile', icon: Users },
+                      { id: 'settings', tKey: 'sidebar.settings', icon: Settings },
+                    ];
+                  }
+
+                  return navItems.map(item => {
+                    const IconComp = item.icon;
+                    const isActive = activeNav === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setActiveNav(item.id as any);
+                          if (item.id === 'my-complaints') {
+                            setStatusFilter('All');
+                          }
+                        }}
+                        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${
+                          isActive 
+                            ? 'bg-surface-green text-primary-text border-l-4 border-primary-green' 
+                            : 'text-secondary-text hover:bg-hover-bg hover:text-primary-text'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <IconComp className={`w-4.5 h-4.5 ${isActive ? 'text-primary-hover' : 'text-muted-text'}`} />
+                          <span>{t(item.tKey)}</span>
+                        </div>
+                        {item.badgeCount && item.badgeCount > 0 ? (
+                          <span className="bg-rose-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
+                            {item.badgeCount}
+                          </span>
+                        ) : null}
+                      </button>
+                    );
+                  });
+                })()}
               </nav>
             </div>
 
             {/* Sidebar bottom CTA and user details */}
             <div className="p-4 border-t border-dividers space-y-4">
-              <button
-                onClick={() => setActiveNav('lodge')}
-                className="w-full bg-primary-green hover:bg-primary-hover text-white font-bold text-xs py-3 px-4 rounded-[12px] shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                Lodge New Grievance
-              </button>
+              {!(currentUser && (
+                currentUser.role === 'OFFICER' || 
+                currentUser.role === 'DEPT_HEAD' || 
+                currentUser.role === 'officer' || 
+                currentUser.role === 'dept_head' ||
+                currentUser.role === 'ADMIN' ||
+                currentUser.role === 'admin'
+              )) && (
+                <button
+                  onClick={() => setActiveNav('lodge')}
+                  className="w-full bg-primary-green hover:bg-primary-hover text-white font-bold text-xs py-3 px-4 rounded-[12px] shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  {t("sidebar.btnLodge")}
+                </button>
+              )}
 
               <button
                 onClick={() => setActiveView('landing')}
                 className="w-full bg-[#EEF8E8] hover:bg-[#EEF8E8]/75 border border-[#C3E39D] text-[#437132] font-bold text-xs py-2 px-4 rounded-[12px] transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
               >
                 <ArrowRight className="w-4 h-4 rotate-180 text-[#569140]" />
-                Back to Landing Page
+                {t("sidebar.btnLanding")}
               </button>
 
               <div className="bg-section-bg rounded-xl p-3 flex items-center justify-between border border-default-border">
                 <div className="min-w-0">
                   <p className="text-xs font-bold text-primary-text truncate">{currentUser.name}</p>
-                  <p className="text-[10px] uppercase font-extrabold tracking-wider text-primary-hover">{currentUser.role} Account</p>
+                  <p className="text-[10px] uppercase font-extrabold tracking-wider text-primary-hover">{currentUser.role} {t("sidebar.accountType")}</p>
                 </div>
                 <button 
                   onClick={handleLogOut}
                   className="text-muted-text hover:text-secondary-text p-1.5 rounded-lg hover:bg-hover-bg transition"
-                  title="Logout"
+                  title={t("sidebar.logout")}
                 >
                   <LogOut className="w-4.5 h-4.5" />
                 </button>
@@ -744,7 +810,7 @@ export default function App() {
                 <Search className="absolute left-3 top-2.5 text-slate-400 w-4 h-4" />
                 <input 
                   type="text"
-                  placeholder="Search grievance ID, ward, or department..."
+                  placeholder={t("header.searchPlaceholder")}
                   value={searchGlobal}
                   onChange={(e) => {
                     setSearchGlobal(e.target.value);
@@ -761,7 +827,7 @@ export default function App() {
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value as any)}
-                  className="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 focus:outline-none"
+                  className="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 focus:outline-none cursor-pointer"
                 >
                   <option value="en">English (ENG)</option>
                   <option value="hi">हिंदी (HIN)</option>
@@ -804,48 +870,33 @@ export default function App() {
                   <div className="rounded-2xl p-8 relative overflow-hidden border border-[#E3ECD9]" style={{ backgroundImage: 'linear-gradient(135deg, #F5FAF2 0%, #EAF6E3 45%, #CFE8C3 100%)' }}>
                     <div className="absolute right-0 bottom-0 opacity-8 hidden lg:block select-none pointer-events-none w-[600px] h-[200px]">
                       <svg width="600" height="200" viewBox="0 0 600 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        {/* Fading Background Grid / Map lines */}
                         <path d="M50 190 H600 M100 160 H600 M150 130 H600 M200 100 H600" stroke="#6FB555" strokeWidth="1" strokeDasharray="5 5" opacity="0.4" />
                         <path d="M300 0 V200 M400 0 V200 M500 0 V200" stroke="#6FB555" strokeWidth="0.5" strokeDasharray="3 6" opacity="0.3" />
-
-                        {/* Faint Birds & Clouds */}
                         <path d="M 320 40 Q 325 35 330 40 Q 335 35 340 40" stroke="#569140" strokeWidth="1.2" fill="none" />
                         <path d="M 450 30 Q 455 25 460 30 Q 465 25 470 30" stroke="#569140" strokeWidth="1.2" fill="none" />
                         <path d="M 380 20 C 390 20, 395 10, 410 10 C 420 10, 425 20, 435 20 Z" fill="#EEF8E8" opacity="0.3" />
-
-                        {/* Hussain Sagar Buddha Statue */}
                         <g fill="#437132" opacity="0.8">
-                          {/* Pedestal */}
                           <rect x="250" y="180" width="30" height="20" rx="1" fill="#437132" />
                           <path d="M 245 190 C 245 182, 285 182, 285 190 Z" fill="#569140" />
-                          {/* Buddha Silhouette */}
                           <path d="M 257 180 C 257 155, 262 138, 265 138 C 268 138, 273 155, 273 180 Z" fill="#437132" />
                           <circle cx="265" cy="133" r="6" fill="#437132" />
                           <circle cx="265" cy="133" r="10" stroke="#6FB555" strokeWidth="1" fill="none" opacity="0.5" />
                         </g>
-
-                        {/* Telangana High Court */}
                         <g fill="#569140" opacity="0.7">
                           <rect x="290" y="140" width="80" height="60" rx="2" />
-                          {/* Domes */}
                           <path d="M 315 140 C 315 125, 345 125, 345 140 Z" fill="#437132" />
                           <circle cx="330" cy="125" r="3" fill="#437132" />
                           <path d="M 295 140 C 295 132, 305 132, 305 140 Z" fill="#437132" />
                           <path d="M 355 140 C 355 132, 365 132, 365 140 Z" fill="#437132" />
-                          {/* Pillars */}
                           <line x1="310" y1="150" x2="310" y2="200" stroke="#FCFDFB" strokeWidth="2" />
                           <line x1="320" y1="150" x2="320" y2="200" stroke="#FCFDFB" strokeWidth="2" />
                           <line x1="340" y1="150" x2="340" y2="200" stroke="#FCFDFB" strokeWidth="2" />
                           <line x1="350" y1="150" x2="350" y2="200" stroke="#FCFDFB" strokeWidth="2" />
                         </g>
-
-                        {/* Telangana Secretariat */}
                         <g fill="#437132" opacity="0.9">
                           <rect x="380" y="110" width="100" height="90" rx="3" />
-                          {/* Main grand dome */}
                           <path d="M 410 110 C 410 90, 450 90, 450 110 Z" fill="#437132" />
                           <rect x="427" y="80" width="6" height="30" fill="#D8B34B" />
-                          {/* Windows & arches */}
                           <rect x="390" y="130" width="12" height="20" rx="1" fill="#FCFDFB" />
                           <rect x="410" y="130" width="12" height="20" rx="1" fill="#FCFDFB" />
                           <rect x="438" y="130" width="12" height="20" rx="1" fill="#FCFDFB" />
@@ -855,45 +906,30 @@ export default function App() {
                           <rect x="438" y="165" width="12" height="20" rx="1" fill="#FCFDFB" />
                           <rect x="458" y="165" width="12" height="20" rx="1" fill="#FCFDFB" />
                         </g>
-
-                        {/* Charminar (Primary focal point) */}
                         <g fill="#437132" opacity="0.95">
-                          {/* Main structure base */}
                           <rect x="490" y="80" width="80" height="120" rx="3" />
-                          {/* Central archway cutout */}
                           <path d="M 510 200 C 510 145, 550 145, 550 200 Z" fill="#FCFDFB" />
-                          {/* Minarets */}
                           <rect x="480" y="30" width="12" height="170" rx="1" fill="#437132" />
                           <rect x="568" y="30" width="12" height="170" rx="1" fill="#437132" />
-                          {/* Minarets behind */}
                           <rect x="498" y="45" width="8" height="155" rx="1" fill="#569140" opacity="0.6" />
                           <rect x="554" y="45" width="8" height="155" rx="1" fill="#569140" opacity="0.6" />
-                          {/* Domes */}
                           <path d="M 478 30 C 478 20, 494 20, 494 30 Z" fill="#D8B34B" />
                           <path d="M 566 30 C 566 20, 582 20, 582 30 Z" fill="#D8B34B" />
-                          {/* Balconies and details */}
                           <rect x="475" y="70" width="110" height="5" fill="#D8B34B" />
                           <rect x="475" y="110" width="110" height="5" fill="#569140" />
-                          {/* Small decorative domes on roof */}
                           <circle cx="510" cy="80" r="4" fill="#569140" />
                           <circle cx="530" cy="80" r="5" fill="#D8B34B" />
                           <circle cx="550" cy="80" r="4" fill="#569140" />
                         </g>
-
-                        {/* Cyber Towers (modern skyline) */}
                         <g fill="#6FB555" opacity="0.4">
                           <rect x="575" y="70" width="20" height="130" rx="2" />
                           <rect x="580" y="80" width="10" height="110" fill="#FCFDFB" />
                         </g>
-
-                        {/* Decorative elements */}
                         <circle cx="230" cy="190" r="10" fill="#6FB555" opacity="0.5" />
                         <rect x="228" y="195" width="4" height="10" fill="#437132" opacity="0.5" />
                         <circle cx="285" cy="192" r="8" fill="#6FB555" opacity="0.5" />
                         <rect x="283" y="197" width="4" height="8" fill="#437132" opacity="0.5" />
-                        {/* Pathway */}
                         <path d="M 200 200 L 265 198 L 330 200" stroke="#EDF2EA" strokeWidth="3" opacity="0.8" />
-                        {/* Location Pin */}
                         <path d="M 530 115 C 530 105, 520 95, 510 95 C 500 95, 490 105, 490 115 C 490 128, 510 150, 510 150 C 510 150, 530 128, 530 115 Z" fill="#D8B34B" opacity="0.9" />
                         <circle cx="510" cy="115" r="6" fill="#FCFDFB" />
                       </svg>
@@ -901,26 +937,26 @@ export default function App() {
 
                     <div className="max-w-2xl space-y-3.5 relative z-10">
                       <span className="bg-[#EEF8E8] text-[#437132] border border-[#C9DEBE] px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider inline-block">
-                        Digital India Redressal Initiative
+                        {t("dashboard.banner.badge")}
                       </span>
                       <h2 className="text-3xl font-extrabold tracking-tight leading-tight text-[#27322B]">
-                        Accelerating Grievance Redressal with Vision Intelligence
+                        {t("dashboard.banner.title")}
                       </h2>
                       <p className="text-xs text-[#5F6B63] leading-relaxed font-medium">
-                        Welcome to CivicAI — the unified national smart grievance dashboard. Snap and submit public infrastructure concerns, leakages, or electrical faults. The AI engine parses categories, assigns coordinates, and notifies field personnel instantly.
+                        {t("dashboard.banner.desc")}
                       </p>
                       <div className="flex flex-wrap gap-3 pt-2">
                         <button 
                           onClick={() => setActiveNav('lodge')}
                           className="bg-[#D8B34B] hover:bg-[#C89D30] text-white font-extrabold text-xs px-5 py-2.5 rounded-[12px] shadow-sm transition cursor-pointer"
                         >
-                          Submit Grievance
+                          {t("dashboard.banner.btnSubmit")}
                         </button>
                         <button 
                           onClick={() => setActiveNav('track')}
                           className="bg-white border border-[#6FB555] hover:bg-[#F5FAF2] text-[#569140] font-bold text-xs px-5 py-2.5 rounded-[12px] transition cursor-pointer"
                         >
-                          Track Action Logs
+                          {t("dashboard.banner.btnTrack")}
                         </button>
                       </div>
                     </div>
@@ -929,11 +965,11 @@ export default function App() {
                   {/* Statistics Row */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                     {[
-                      { label: 'Total Complaints', value: stats.total, color: 'text-[#27322B]', bg: 'bg-white', icon: FileText, change: '+12%', up: true, changeColor: 'text-[#2E8B57]' },
-                      { label: 'In Progress', value: stats.inProgress, color: 'text-[#D97706]', bg: 'bg-white', icon: Clock, change: 'Running', up: true, changeColor: 'text-[#D97706]' },
-                      { label: 'Resolved', value: stats.resolved, color: 'text-[#2E8B57]', bg: 'bg-white', icon: CheckCircle2, change: '94% Rate', up: true, changeColor: 'text-[#2E8B57]' },
-                      { label: 'Rejected', value: stats.rejected, color: 'text-[#DC2626]', bg: 'bg-white', icon: AlertTriangle, change: 'Vetted', up: false, changeColor: 'text-[#8B948C]' },
-                      { label: 'Resolution Rate', value: `${stats.total > 0 ? ((stats.resolved / stats.total) * 100).toFixed(0) : 100}%`, color: 'text-[#6FB555]', bg: 'bg-white', icon: Activity, change: 'Optimal', up: true, changeColor: 'text-[#6FB555]' }
+                      { label: t("dashboard.stats.total"), value: stats.total, color: 'text-[#27322B]', bg: 'bg-white', icon: FileText, change: '+12%', up: true, changeColor: 'text-[#2E8B57]' },
+                      { label: t("dashboard.stats.progress"), value: stats.inProgress, color: 'text-[#D97706]', bg: 'bg-white', icon: Clock, change: 'Running', up: true, changeColor: 'text-[#D97706]' },
+                      { label: t("dashboard.stats.resolved"), value: stats.resolved, color: 'text-[#2E8B57]', bg: 'bg-white', icon: CheckCircle2, change: '94% Rate', up: true, changeColor: 'text-[#2E8B57]' },
+                      { label: t("dashboard.stats.rejected"), value: stats.rejected, color: 'text-[#DC2626]', bg: 'bg-white', icon: AlertTriangle, change: 'Vetted', up: false, changeColor: 'text-[#8B948C]' },
+                      { label: t("dashboard.stats.rate"), value: `${stats.total > 0 ? ((stats.resolved / stats.total) * 100).toFixed(0) : 100}%`, color: 'text-[#6FB555]', bg: 'bg-white', icon: Activity, change: 'Optimal', up: true, changeColor: 'text-[#6FB555]' }
                     ].map((card, idx) => {
                       const IconComp = card.icon;
                       return (
@@ -948,7 +984,7 @@ export default function App() {
                               <span className={`text-[10px] font-bold ${card.changeColor}`}>
                                 {card.change}
                               </span>
-                              <span className="text-[10px] text-[#8B948C]">status validation</span>
+                              <span className="text-[10px] text-[#8B948C]">{t("dashboard.stats.validation")}</span>
                             </div>
                           </div>
                         </div>
@@ -963,8 +999,8 @@ export default function App() {
                     <div className="lg:col-span-8 bg-white border border-default-border rounded-[18px] shadow-sm p-6 space-y-4">
                       <div className="flex justify-between items-center">
                         <div>
-                          <h3 className="text-base font-bold text-primary-text">Recent Grievances</h3>
-                          <p className="text-xs text-secondary-text">Live feed of reported municipal grievances across GHMC zones</p>
+                          <h3 className="text-base font-bold text-primary-text">{t("dashboard.recent.title")}</h3>
+                          <p className="text-xs text-secondary-text">{t("dashboard.recent.desc")}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <select 
@@ -972,7 +1008,7 @@ export default function App() {
                             onChange={(e) => setStatusFilter(e.target.value)}
                             className="bg-white border border-default-border rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-secondary-text focus:outline-none"
                           >
-                            <option value="All">All Statuses</option>
+                            <option value="All">{t("dashboard.recent.allStatuses")}</option>
                             <option value="Pending">Pending</option>
                             <option value="Verified">Verified</option>
                             <option value="In Progress">In Progress</option>
@@ -986,19 +1022,19 @@ export default function App() {
                         <table className="w-full text-left text-xs border-collapse">
                           <thead>
                             <tr className="bg-section-bg border-b border-dividers text-secondary-text font-bold uppercase tracking-wider">
-                              <th className="p-3.5">ID</th>
-                              <th className="p-3.5">Category</th>
-                              <th className="p-3.5">Department</th>
-                              <th className="p-3.5">Status</th>
-                              <th className="p-3.5">Date</th>
-                              <th className="p-3.5 text-center">Action</th>
+                              <th className="p-3.5">{t("dashboard.recent.colId")}</th>
+                              <th className="p-3.5">{t("dashboard.recent.colCategory")}</th>
+                              <th className="p-3.5">{t("dashboard.recent.colDept")}</th>
+                              <th className="p-3.5">{t("dashboard.recent.colStatus")}</th>
+                              <th className="p-3.5">{t("dashboard.recent.colDate")}</th>
+                              <th className="p-3.5 text-center">{t("dashboard.recent.colAction")}</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-dividers font-medium">
                             {filteredComplaints.length === 0 ? (
                               <tr>
                                 <td colSpan={6} className="p-6 text-center text-muted-text">
-                                  No complaints matched the criteria.
+                                  {t("dashboard.recent.noMatch")}
                                 </td>
                               </tr>
                             ) : (
@@ -1025,7 +1061,7 @@ export default function App() {
                                         setActiveNav('track');
                                       }}
                                       className="text-primary-green hover:text-primary-hover hover:bg-surface-green p-1.5 rounded-lg transition cursor-pointer"
-                                      title="Track log details"
+                                      title={t("dashboard.recent.trackTooltip")}
                                     >
                                       <Search className="w-4 h-4" />
                                     </button>
@@ -1045,18 +1081,18 @@ export default function App() {
                       <div className="bg-[#EEF8E8] border border-[#D6E9CB] rounded-[18px] p-5 space-y-4">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-bold tracking-widest text-[#2E5A2E] uppercase flex items-center gap-1.5">
-                            <Sparkles className="w-3.5 h-3.5 text-[#6FB555] animate-pulse" /> AI Prediction Alert
+                            <Sparkles className="w-3.5 h-3.5 text-[#6FB555] animate-pulse" /> {t("dashboard.ai.title")}
                           </span>
                           <span className="bg-[#D8B34B] text-[10px] font-bold text-white px-2.5 py-0.5 rounded">
-                            Confidence: 94%
+                            {t("dashboard.ai.confidence")}: 94%
                           </span>
                         </div>
                         <div className="flex gap-3">
                           <AlertTriangle className="w-12 h-12 text-[#D8B34B] shrink-0 mt-0.5" />
                           <div>
-                            <h4 className="text-xs font-bold text-[#2E5A2E]">Rainfall Anomaly Alert</h4>
+                            <h4 className="text-xs font-bold text-[#2E5A2E]">{t("dashboard.ai.alertTitle")}</h4>
                             <p className="text-[11px] text-[#4A5C4A] mt-1 leading-relaxed">
-                              Based on past weather history and current open sewerage complaints, Ward 12 is at high risk of waterlogging.
+                              {t("dashboard.ai.alertDesc")}
                             </p>
                           </div>
                         </div>
@@ -1064,15 +1100,15 @@ export default function App() {
                           onClick={() => setActiveNav('ward-health')}
                           className="w-full bg-[#6FB555] hover:bg-[#569140] text-white font-bold text-xs py-2.5 px-3 rounded-[12px] transition cursor-pointer"
                         >
-                          View Analytics
+                          {t("dashboard.ai.btnAnalytics")}
                         </button>
                       </div>
 
                       {/* Nearby Map Card */}
                       <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3.5 shadow-sm">
                         <div className="flex justify-between items-center">
-                          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">Nearby Civic Grievances</h4>
-                          <span className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Live Map</span>
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">{t("dashboard.map.title")}</h4>
+                          <span className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">{t("dashboard.map.badge")}</span>
                         </div>
                         <div className="h-48 rounded-lg overflow-hidden border border-slate-100 relative">
                           <InteractiveMap 
@@ -1109,13 +1145,13 @@ export default function App() {
                       {/* Government Announcements */}
                       <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
                         <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                          <Award className="w-4 h-4 text-blue-600" /> Government Announcements
+                          <Award className="w-4 h-4 text-blue-600" /> {t("dashboard.ann.title")}
                         </h4>
                         <div className="space-y-3">
                           {[
-                            { title: 'Swachh Bharat Cleanliness Drive', desc: 'Central audit inspectors to visit Hyderabad zones starting July 15th.', date: '3 days ago' },
-                            { title: 'Monsoon Safety Mandate', desc: 'Drains & flood control systems set on high status guidelines.', date: '1 week ago' },
-                            { title: 'Streetlight LED Upgrade Scheme', desc: 'State electrical division to replace 1,500 halogen streetlights.', date: '2 weeks ago' }
+                            { title: t("dashboard.ann.item1Title"), desc: t("dashboard.ann.item1Desc"), date: '3 days ago' },
+                            { title: t("dashboard.ann.item2Title"), desc: t("dashboard.ann.item2Desc"), date: '1 week ago' },
+                            { title: t("dashboard.ann.item3Title"), desc: t("dashboard.ann.item3Desc"), date: '2 weeks ago' }
                           ].map((item, idx) => (
                             <div key={idx} className="p-3 bg-slate-50 rounded-xl space-y-1 hover:bg-slate-100 transition-colors">
                               <div className="flex justify-between items-center">
@@ -1141,12 +1177,12 @@ export default function App() {
                   {/* Breadcrumb Header */}
                   <div className="space-y-2">
                     <div className="flex items-center space-x-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                      <span className="cursor-pointer hover:text-slate-600" onClick={() => setActiveNav('dashboard')}>Dashboard</span>
+                      <span className="cursor-pointer hover:text-slate-600" onClick={() => setActiveNav('dashboard')}>{t("lodge.breadcrumb.dashboard")}</span>
                       <ChevronRight className="w-3.5 h-3.5" />
-                      <span className="text-blue-600">Lodge Complaint</span>
+                      <span className="text-blue-600">{t("sidebar.lodge")}</span>
                     </div>
-                    <h2 className="text-2xl font-bold tracking-tight text-slate-900">Register Official Grievance</h2>
-                    <p className="text-xs text-slate-500">Provide details, media, and location to route your concern automatically.</p>
+                    <h2 className="text-2xl font-bold tracking-tight text-slate-900">{t("lodge.title")}</h2>
+                    <p className="text-xs text-slate-500">{t("lodge.desc")}</p>
                   </div>
 
                   <form onSubmit={handleLodgeComplaint} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -1156,30 +1192,30 @@ export default function App() {
                       
                       {/* Section 1: Complaint Details */}
                       <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
-                        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">Grievance Description</h3>
+                        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">{t("lodge.section.details")}</h3>
                         
                         <div className="space-y-4">
                           <div>
-                            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Grievance Title</label>
+                            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">{t("lodge.field.title")}</label>
                             <input 
                               type="text" 
                               required
                               value={lodgeTitle}
                               onChange={(e) => setLodgeTitle(e.target.value)}
-                              placeholder="Brief summary (e.g., Broken water pipe causing floods near Main Road)"
+                              placeholder={t("lodge.field.titlePlaceholder")}
                               className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-blue-500 focus:bg-white"
                             />
                           </div>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Primary Category</label>
+                              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">{t("lodge.field.category")}</label>
                               <select 
                                 value={customCategory}
                                 onChange={(e) => setCustomCategory(e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-blue-500 focus:bg-white"
+                                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-blue-500 focus:bg-white cursor-pointer"
                               >
-                                <option value="">-- Select Category --</option>
+                                <option value="">{t("lodge.field.categorySelect")}</option>
                                 <option value="Road Infrastructure">Road Infrastructure</option>
                                 <option value="Solid Waste & Sanitation">Solid Waste & Sanitation</option>
                                 <option value="Water Supply & Sewerage">Water Supply & Sewerage</option>
@@ -1189,13 +1225,13 @@ export default function App() {
                             </div>
 
                             <div>
-                              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Subcategory Type</label>
+                              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">{t("lodge.field.subcategory")}</label>
                               <select 
                                 value={customSubcategory}
                                 onChange={(e) => handleSubcategoryChange(e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-blue-500 focus:bg-white"
+                                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-blue-500 focus:bg-white cursor-pointer"
                               >
-                                <option value="">-- Select Incident Type --</option>
+                                <option value="">{t("lodge.field.subcategorySelect")}</option>
                                 <option value="Pothole">Pothole / Road Defect</option>
                                 <option value="Garbage Overflow">Garbage Dump Overflow</option>
                                 <option value="Waterlogging">Waterlogging / Drainage Leakage</option>
@@ -1207,25 +1243,25 @@ export default function App() {
 
                           <div>
                             <div className="flex justify-between items-center mb-1">
-                              <label className="block text-xs font-bold text-slate-700 uppercase">Detailed Description</label>
+                              <label className="block text-xs font-bold text-slate-700 uppercase">{t("lodge.field.description")}</label>
                               <button
                                 type="button"
                                 onClick={toggleSpeechRecognition}
-                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold transition-all border ${
+                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold transition-all border cursor-pointer ${
                                   isListening 
                                     ? 'bg-rose-500 text-white border-rose-400 animate-pulse' 
                                     : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
                                 }`}
                               >
                                 {isListening ? <MicOff className="w-3 h-3" /> : <Mic className="w-3 h-3 text-blue-600" />}
-                                <span>{isListening ? 'Stop Listening' : 'Dictate'}</span>
+                                <span>{isListening ? t("lodge.btn.stopDictate") : t("lodge.btn.dictate")}</span>
                               </button>
                             </div>
                             <textarea 
                               required
                               value={lodgeDescription}
                               onChange={(e) => setLodgeDescription(e.target.value)}
-                              placeholder="Please provide full details of the civic issue, including severity, impact, and other surrounding context..."
+                              placeholder={t("lodge.field.descriptionPlaceholder")}
                               rows={4}
                               className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:outline-none focus:border-blue-500 focus:bg-white"
                             />
@@ -1236,7 +1272,7 @@ export default function App() {
                       {/* Section 2: Location Selector */}
                       <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
                         <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Incident Location</h3>
+                          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">{t("lodge.section.location")}</h3>
                           <button
                             type="button"
                             onClick={handleGeolocate}
@@ -1244,13 +1280,13 @@ export default function App() {
                             className="bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs px-3.5 py-1.5 rounded-lg transition flex items-center gap-1 cursor-pointer"
                           >
                             <MapPin className="w-3.5 h-3.5" />
-                            {isLocating ? 'Locating...' : 'Fetch Device GPS'}
+                            {isLocating ? t("lodge.btn.gpsLoading") : t("lodge.btn.gps")}
                           </button>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                           <div>
-                            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">State / Province</label>
+                            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">{t("lodge.field.state")}</label>
                             <input 
                               type="text" 
                               value={stateName}
@@ -1259,7 +1295,7 @@ export default function App() {
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">District</label>
+                            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">{t("lodge.field.district")}</label>
                             <input 
                               type="text" 
                               value={districtName}
@@ -1268,7 +1304,7 @@ export default function App() {
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Ward / Zone</label>
+                            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">{t("lodge.field.ward")}</label>
                             <input 
                               type="text" 
                               value={wardNo}
@@ -1280,22 +1316,22 @@ export default function App() {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Street / Locality</label>
+                            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">{t("lodge.field.street")}</label>
                             <input 
                               type="text" 
                               value={streetName}
                               onChange={(e) => setStreetName(e.target.value)}
-                              placeholder="e.g. Metro Pillar 32, Road No 4"
+                              placeholder={t("lodge.field.streetPlaceholder")}
                               className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Landmark</label>
+                            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">{t("lodge.field.landmark")}</label>
                             <input 
                               type="text" 
                               value={landmark}
                               onChange={(e) => setLandmark(e.target.value)}
-                              placeholder="e.g. Near HDFC Bank ATM"
+                              placeholder={t("lodge.field.landmarkPlaceholder")}
                               className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none"
                             />
                           </div>
@@ -1305,7 +1341,7 @@ export default function App() {
                           <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 text-xs text-slate-600 flex items-start gap-2">
                             <MapPin className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
                             <div>
-                              <p className="font-bold text-slate-700">Mappable Location Coordinates</p>
+                              <p className="font-bold text-slate-700">{t("lodge.location.coords")}</p>
                               <p className="mt-0.5 text-slate-500 leading-relaxed">{address}</p>
                             </div>
                           </div>
@@ -1332,12 +1368,12 @@ export default function App() {
 
                       {/* Section 3: Evidence Upload */}
                       <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
-                        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">Upload Image Evidence</h3>
+                        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">{t("lodge.section.evidence")}</h3>
                         
                         <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-50/50 transition">
                           <Upload className="w-10 h-10 text-slate-400 mb-3" />
-                          <p className="text-xs font-bold text-slate-700">Drag & drop files here, or click to browse</p>
-                          <p className="text-[10px] text-slate-400 mt-1">Supports PNG, JPG, or JPEG up to 10MB</p>
+                          <p className="text-xs font-bold text-slate-700">{t("lodge.evidence.dragDrop")}</p>
+                          <p className="text-[10px] text-slate-400 mt-1">{t("lodge.evidence.formats")}</p>
                           <input 
                             type="file" 
                             accept="image/*"
@@ -1349,7 +1385,7 @@ export default function App() {
                             htmlFor="image-file-input"
                             className="mt-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-4 py-2 rounded-lg transition cursor-pointer"
                           >
-                            Browse Files
+                            {t("lodge.btn.browse")}
                           </label>
                         </div>
 
@@ -1363,7 +1399,7 @@ export default function App() {
                               />
                               <div className="min-w-0">
                                 <p className="text-xs font-bold text-slate-800 truncate">grievance_evidence_img.png</p>
-                                <p className="text-[10px] text-slate-400 mt-0.5">Uploaded & Ready</p>
+                                <p className="text-[10px] text-slate-400 mt-0.5">{t("lodge.evidence.ready")}</p>
                                 <div className="w-32 bg-slate-200 h-1.5 rounded-full mt-1.5 overflow-hidden">
                                   <div className="bg-emerald-500 h-full w-full"></div>
                                 </div>
@@ -1389,12 +1425,12 @@ export default function App() {
                             {isAnalyzing ? (
                               <>
                                 <RefreshCw className="w-4 h-4 animate-spin" />
-                                Analyzing Image with Gemini Vision...
+                                {t("lodge.btn.aiScanLoading")}
                               </>
                             ) : (
                               <>
                                 <Sparkles className="w-4 h-4" />
-                                Run Gemini AI Vision Router
+                                {t("lodge.btn.aiScan")}
                               </>
                             )}
                           </button>
@@ -1410,27 +1446,27 @@ export default function App() {
                       {aiAnalysis && (
                         <div className="bg-[#EEF8E8] border border-[#D6E9CB] rounded-[18px] p-5 space-y-4">
                           <span className="text-[10px] uppercase tracking-widest font-extrabold text-[#2E5A2E] flex items-center gap-1.5">
-                            <CheckCircle2 className="w-4.5 h-4.5 text-[#2E8B57]" /> AI Auto Router Active
+                            <CheckCircle2 className="w-4.5 h-4.5 text-[#2E8B57]" /> {t("lodge.aiRouter.active")}
                           </span>
                           
                           <div className="space-y-3.5 pt-3 border-t border-[#D6E9CB]">
                             <div>
-                              <p className="text-[10px] text-[#4A5C4A] uppercase font-bold">Detected Category</p>
+                              <p className="text-[10px] text-[#4A5C4A] uppercase font-bold">{t("lodge.aiRouter.cat")}</p>
                               <p className="text-xs font-bold mt-0.5 text-[#27322B]">{aiAnalysis.category}</p>
                             </div>
                             <div>
-                              <p className="text-[10px] text-[#4A5C4A] uppercase font-bold">Assigned Department</p>
+                              <p className="text-[10px] text-[#4A5C4A] uppercase font-bold">{t("lodge.aiRouter.dept")}</p>
                               <p className="text-xs font-bold mt-0.5 text-[#D97706]">{aiAnalysis.department}</p>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <p className="text-[10px] text-[#4A5C4A] uppercase font-bold">Priority Status</p>
+                                <p className="text-[10px] text-[#4A5C4A] uppercase font-bold">{t("lodge.aiRouter.severity")}</p>
                                 <p className={`text-xs font-bold mt-0.5 ${
                                   aiAnalysis.severity === 'Critical' || aiAnalysis.severity === 'High' ? 'text-[#DC2626]' : 'text-[#3B82F6]'
                                 }`}>{aiAnalysis.severity}</p>
                               </div>
                               <div>
-                                <p className="text-[10px] text-[#4A5C4A] uppercase font-bold">Confidence Score</p>
+                                <p className="text-[10px] text-[#4A5C4A] uppercase font-bold">{t("lodge.aiRouter.score")}</p>
                                 <p className="text-xs font-bold mt-0.5 text-[#2E8B57]">{aiAnalysis.confidence}%</p>
                               </div>
                             </div>
@@ -1440,14 +1476,14 @@ export default function App() {
 
                       {/* Department Routing details info */}
                       <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm text-xs">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 pb-2 border-b border-slate-100">Routing Information</h4>
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 pb-2 border-b border-slate-100">{t("lodge.routing.title")}</h4>
                         
                         {customDepartment ? (
                           <div className="space-y-3">
                             <div className="flex items-start gap-2">
                               <Building2 className="w-4.5 h-4.5 text-blue-600 shrink-0 mt-0.5" />
                               <div>
-                                <p className="font-bold text-slate-800">Target Agency</p>
+                                <p className="font-bold text-slate-800">{t("lodge.routing.agency")}</p>
                                 <p className="text-slate-500 mt-0.5">{customDepartment}</p>
                               </div>
                             </div>
@@ -1455,21 +1491,21 @@ export default function App() {
                             <div className="flex items-start gap-2">
                               <Users className="w-4.5 h-4.5 text-blue-600 shrink-0 mt-0.5" />
                               <div>
-                                <p className="font-bold text-slate-800">Assigned Ward Supervisor</p>
-                                <p className="text-slate-500 mt-0.5">Automated Field Dispatch</p>
+                                <p className="font-bold text-slate-800">{t("lodge.routing.supervisor")}</p>
+                                <p className="text-slate-500 mt-0.5">{t("lodge.routing.dispatch")}</p>
                               </div>
                             </div>
 
                             <div className="flex items-start gap-2">
                               <Clock className="w-4.5 h-4.5 text-blue-600 shrink-0 mt-0.5" />
                               <div>
-                                <p className="font-bold text-slate-800">Expected Response SLA</p>
-                                <p className="text-slate-500 mt-0.5">24 - 48 working hours</p>
+                                <p className="font-bold text-slate-800">{t("lodge.routing.sla")}</p>
+                                <p className="text-slate-500 mt-0.5">{t("lodge.routing.slaValue")}</p>
                               </div>
                             </div>
                           </div>
                         ) : (
-                          <p className="text-slate-400 italic">Select an incident subcategory to view automated routing targets.</p>
+                          <p className="text-slate-400 italic">{t("lodge.routing.warning")}</p>
                         )}
                       </div>
 
@@ -1477,16 +1513,16 @@ export default function App() {
                       <div className="bg-red-50 border border-red-200 rounded-2xl p-5 space-y-3">
                         <div className="flex items-center space-x-2 text-red-900 font-bold">
                           <AlertTriangle className="w-5 h-5 text-red-600" />
-                          <h4 className="text-xs uppercase tracking-wider">Emergency Hazards</h4>
+                          <h4 className="text-xs uppercase tracking-wider">{t("lodge.emergency.title")}</h4>
                         </div>
                         <p className="text-[11px] text-red-800 leading-relaxed">
-                          Is this an active life safety hazard, such as live hanging electrical wires sparking or open structural cave-ins? Report directly to central emergency control room:
+                          {t("lodge.emergency.desc")}
                         </p>
                         <a 
                           href="tel:100" 
                           className="w-full bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs py-2 px-3 rounded-lg transition inline-flex items-center justify-center gap-1.5"
                         >
-                          <Phone className="w-4 h-4" /> Call National Emergency (100)
+                          <Phone className="w-4 h-4" /> {t("lodge.emergency.btn")}
                         </a>
                       </div>
 
@@ -1496,17 +1532,17 @@ export default function App() {
                           type="submit"
                           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs py-3 px-4 rounded-lg shadow-sm transition cursor-pointer"
                         >
-                          Submit Grievance Complaint
+                          {t("lodge.btn.submit")}
                         </button>
                         <button
                           type="button"
                           onClick={() => {
-                            showToast('Grievance draft saved successfully!', 'info');
+                            showToast(t('toast.info.draft'), 'info');
                             setActiveNav('dashboard');
                           }}
                           className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-3 px-4 rounded-lg transition cursor-pointer"
                         >
-                          Save Draft Profile
+                          {t("lodge.btn.saveDraft")}
                         </button>
                       </div>
 
@@ -1523,18 +1559,18 @@ export default function App() {
                   <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                       <div>
-                        <h2 className="text-xl font-bold tracking-tight text-slate-900">Track Municipal Grievance</h2>
-                        <p className="text-xs text-slate-500">Monitor resolution timelines, officer remarks, and before/after verification logs</p>
+                        <h2 className="text-xl font-bold tracking-tight text-slate-900">{t("track.title")}</h2>
+                        <p className="text-xs text-slate-500">{t("track.desc")}</p>
                       </div>
                       
                       <div className="w-full sm:w-72">
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Select Grievance</label>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t("track.field.select")}</label>
                         <select
                           value={selectedComplaintId || ''}
                           onChange={(e) => setSelectedComplaintId(e.target.value || null)}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 focus:bg-white"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 focus:bg-white cursor-pointer"
                         >
-                          <option value="">-- Choose Active Complaint --</option>
+                          <option value="">{t("track.field.selectPlaceholder")}</option>
                           {complaints.map(item => (
                             <option key={item.id} value={item.id}>
                               {item.complaintId} - {item.title.substring(0, 35)}...
@@ -1555,9 +1591,9 @@ export default function App() {
                         <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
                           <div className="flex flex-wrap justify-between items-center gap-4">
                             <div>
-                              <span className="text-[10px] font-extrabold text-blue-600 uppercase tracking-widest">Active Investigation</span>
+                              <span className="text-[10px] font-extrabold text-blue-600 uppercase tracking-widest">{t("track.header.investigation")}</span>
                               <h3 className="text-lg font-bold text-slate-955 mt-1">{selectedComplaintDetails.complaint.complaintId} — {selectedComplaintDetails.complaint.title}</h3>
-                              <p className="text-xs text-slate-500 mt-0.5">Registered on {new Date(selectedComplaintDetails.complaint.createdAt).toLocaleString()}</p>
+                              <p className="text-xs text-slate-500 mt-0.5">{t("track.header.registered")} {new Date(selectedComplaintDetails.complaint.createdAt).toLocaleString()}</p>
                             </div>
 
                             <div className="flex gap-2">
@@ -1579,21 +1615,21 @@ export default function App() {
                           </div>
 
                           <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 text-xs leading-relaxed text-slate-600">
-                            <span className="font-bold text-slate-800">Description:</span> {selectedComplaintDetails.complaint.description || 'No detailed description provided.'}
+                            <span className="font-bold text-slate-800">{t("track.header.desc")}:</span> {selectedComplaintDetails.complaint.description || t("track.header.noDesc")}
                           </div>
                         </div>
 
                         {/* 5-Stage Stepper timeline details */}
                         <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-6 shadow-sm">
-                          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">Redressal Process Flow</h4>
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">{t("track.flow.title")}</h4>
                           
                           <div className="flex flex-col sm:flex-row justify-between items-center gap-6 relative">
                             {[
-                              { label: 'Lodged', status: 'Pending', desc: 'Complaint registered' },
-                              { label: 'Verified', status: 'Verified', desc: 'Field verified' },
-                              { label: 'In Progress', status: 'In Progress', desc: 'Action dispatched' },
-                              { label: 'Resolved', status: 'Resolved', desc: 'Work certified' },
-                              { label: 'Validated', status: 'Validated', desc: 'Citizen confirmed' }
+                              { label: t("track.flow.lodged"), status: 'Pending', desc: t("track.flow.lodgedDesc") },
+                              { label: t("track.flow.verified"), status: 'Verified', desc: t("track.flow.verifiedDesc") },
+                              { label: t("track.flow.progress"), status: 'In Progress', desc: t("track.flow.progressDesc") },
+                              { label: t("track.flow.resolved"), status: 'Resolved', desc: t("track.flow.resolvedDesc") },
+                              { label: t("track.flow.validated"), status: 'Validated', desc: t("track.flow.validatedDesc") }
                             ].map((step, idx) => {
                               const complaintStatus = selectedComplaintDetails.complaint.status;
                               let statusState: 'completed' | 'current' | 'future' = 'future';
@@ -1635,22 +1671,22 @@ export default function App() {
 
                         {/* Government Response Logs vertical Timeline */}
                         <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-6 shadow-sm">
-                          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">Official Action Timeline</h4>
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">{t("track.timeline.title")}</h4>
                           
                           <div className="space-y-6 relative border-l border-slate-100 pl-6 ml-3">
                             {selectedComplaintDetails.history.length === 0 ? (
-                              <p className="text-xs text-slate-400 italic">No official action records logged yet.</p>
+                              <p className="text-xs text-slate-400 italic">{t("track.timeline.noLogs")}</p>
                             ) : (
                               selectedComplaintDetails.history.map((log, idx) => (
                                 <div key={idx} className="relative space-y-1 hover:bg-slate-50/50 p-2 rounded-lg transition-colors">
                                   <span className="absolute -left-9.5 top-1 bg-white border-2 border-blue-600 rounded-full w-3.5 h-3.5"></span>
                                   <div className="flex justify-between items-center text-[10px] text-slate-400 font-bold">
                                     <span>{new Date(log.createdAt).toLocaleString()}</span>
-                                    <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600">Officer Note</span>
+                                    <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600">{t("track.timeline.note")}</span>
                                   </div>
-                                  <h5 className="text-xs font-bold text-slate-900">Status updated to: {log.status}</h5>
+                                  <h5 className="text-xs font-bold text-slate-900">{t("track.timeline.statusPrefix")} {log.status}</h5>
                                   <p className="text-xs text-slate-600 leading-relaxed italic">"{log.remarks}"</p>
-                                  <p className="text-[10px] text-slate-400 mt-1">Logged by: {log.updatedBy}</p>
+                                  <p className="text-[10px] text-slate-400 mt-1">{t("track.timeline.loggedBy")} {log.updatedBy}</p>
                                 </div>
                               ))
                             )}
@@ -1660,17 +1696,17 @@ export default function App() {
                         {/* Checklist validation items & Before/After Images */}
                         <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-6 shadow-sm">
                           <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">Validation Checks</h4>
-                            <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Quality Inspected</span>
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">{t("track.validation.title")}</h4>
+                            <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">{t("track.validation.badge")}</span>
                           </div>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-3">
                               {[
-                                { label: 'AI classification check verified', passed: true },
-                                { label: 'Assigned supervisor response received', passed: true },
-                                { label: 'Site evidence photo logged successfully', passed: true },
-                                { label: 'Resolution certification approved', passed: selectedComplaintDetails.complaint.status === 'Resolved' }
+                                { label: t("track.validation.check1"), passed: true },
+                                { label: t("track.validation.check2"), passed: true },
+                                { label: t("track.validation.check3"), passed: true },
+                                { label: t("track.validation.check4"), passed: selectedComplaintDetails.complaint.status === 'Resolved' }
                               ].map((item, idx) => (
                                 <div key={idx} className="flex items-center gap-2 text-xs">
                                   {item.passed ? (
@@ -1686,7 +1722,7 @@ export default function App() {
                             {/* Side-by-side Before/After media cards */}
                             {showBeforeAfter && (
                               <div className="space-y-3">
-                                <p className="text-[10px] text-slate-400 font-bold uppercase">Before & After Work Verification</p>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase">{t("track.beforeAfter.title")}</p>
                                 <div className="grid grid-cols-2 gap-2">
                                   <div className="space-y-1">
                                     <img 
@@ -1694,7 +1730,7 @@ export default function App() {
                                       alt="Before" 
                                       className="h-24 w-full object-cover rounded-lg border border-slate-200"
                                     />
-                                    <p className="text-[9px] text-center font-bold text-slate-500">Before (Logged)</p>
+                                    <p className="text-[9px] text-center font-bold text-slate-500">{t("track.beforeAfter.before")}</p>
                                   </div>
                                   <div className="space-y-1">
                                     {selectedComplaintDetails.complaint.status === 'Resolved' ? (
@@ -1710,10 +1746,10 @@ export default function App() {
                                       </div>
                                     ) : (
                                       <div className="h-24 w-full bg-slate-100 rounded-lg flex items-center justify-center border border-dashed border-slate-200 text-center p-2">
-                                        <span className="text-[9px] text-slate-400 font-bold uppercase">Awaiting Action</span>
+                                        <span className="text-[9px] text-slate-400 font-bold uppercase">{t("track.beforeAfter.awaiting")}</span>
                                       </div>
                                     )}
-                                    <p className="text-[9px] text-center font-bold text-slate-500">After (Inspected)</p>
+                                    <p className="text-[9px] text-center font-bold text-slate-500">{t("track.beforeAfter.after")}</p>
                                   </div>
                                 </div>
                               </div>
@@ -1729,27 +1765,27 @@ export default function App() {
                         {/* AI Summary metrics card */}
                         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-white space-y-4">
                           <div className="flex justify-between items-center">
-                            <span className="text-[9px] uppercase tracking-widest font-extrabold text-blue-400">AI Routing Summary</span>
-                            <span className="bg-slate-800 text-[10px] text-slate-300 font-semibold px-2 py-0.5 rounded">Vetted</span>
+                            <span className="text-[9px] uppercase tracking-widest font-extrabold text-blue-400">{t("track.ai.title")}</span>
+                            <span className="bg-slate-800 text-[10px] text-slate-300 font-semibold px-2 py-0.5 rounded">{t("track.ai.badge")}</span>
                           </div>
                           
                           <div className="space-y-3 text-xs pt-1 border-t border-slate-800">
                             <div>
-                              <p className="text-[9px] text-slate-500 uppercase font-bold">Recommended Department</p>
+                              <p className="text-[9px] text-slate-500 uppercase font-bold">{t("track.ai.dept")}</p>
                               <p className="text-white font-medium mt-0.5">{selectedComplaintDetails.complaint.category}</p>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <p className="text-[9px] text-slate-500 uppercase font-bold">Severity level</p>
+                                <p className="text-[9px] text-slate-500 uppercase font-bold">{t("track.ai.severity")}</p>
                                 <p className="text-white font-bold mt-0.5">{selectedComplaintDetails.complaint.severity}</p>
                               </div>
                               <div>
-                                <p className="text-[9px] text-slate-500 uppercase font-bold">AI confidence</p>
+                                <p className="text-[9px] text-slate-500 uppercase font-bold">{t("track.ai.confidence")}</p>
                                 <p className="text-emerald-400 font-bold mt-0.5">{selectedComplaintDetails.complaint.aiConfidence}%</p>
                               </div>
                             </div>
                             <div>
-                              <p className="text-[9px] text-slate-500 uppercase font-bold">AI Overview</p>
+                              <p className="text-[9px] text-slate-500 uppercase font-bold">{t("track.ai.overview")}</p>
                               <p className="text-slate-400 mt-0.5 leading-relaxed">{selectedComplaintDetails.complaint.aiSummary}</p>
                             </div>
                           </div>
@@ -1758,11 +1794,11 @@ export default function App() {
                         {/* Citizen feedback review stars */}
                         {selectedComplaintDetails.complaint.status === 'Resolved' && (
                           <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm text-xs">
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 pb-2 border-b border-slate-100">Grievance Validation</h4>
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 pb-2 border-b border-slate-100">{t("track.feedback.title")}</h4>
                             
                             <div className="space-y-3">
                               <p className="text-[11px] text-slate-500 leading-relaxed">
-                                Our records indicate that this issue has been resolved. Please rate the service quality and confirm:
+                                {t("track.feedback.desc")}
                               </p>
 
                               <div className="flex space-x-1.5 justify-center py-2">
@@ -1781,7 +1817,7 @@ export default function App() {
                               <textarea
                                 value={citizenFeedbackText}
                                 onChange={(e) => setCitizenFeedbackText(e.target.value)}
-                                placeholder="Any feedback or validation remarks for the municipal board..."
+                                placeholder={t("track.feedback.placeholder")}
                                 rows={3}
                                 className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs focus:outline-none focus:border-blue-500 focus:bg-white"
                               />
@@ -1790,7 +1826,7 @@ export default function App() {
                                 onClick={handleSubmitFeedback}
                                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs py-2 px-3 rounded-lg transition cursor-pointer"
                               >
-                                Submit Validation logs
+                                {t("track.feedback.btn")}
                               </button>
                             </div>
                           </div>
@@ -1802,9 +1838,9 @@ export default function App() {
                   ) : (
                     <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400 max-w-xl mx-auto shadow-sm">
                       <Clock className="w-12 h-12 mx-auto text-slate-300 mb-4" />
-                      <p className="text-sm font-bold text-slate-700">No grievance selected</p>
+                      <p className="text-sm font-bold text-slate-700">{t("track.noComplaint.title")}</p>
                       <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                        Please choose one of your active complaints from the dropdown at the top of the tracker to view audit trails, department updates, and resolution checklist logs.
+                        {t("track.noComplaint.desc")}
                       </p>
                     </div>
                   )}
@@ -1816,15 +1852,40 @@ export default function App() {
               {!['dashboard', 'lodge', 'track'].includes(activeNav) && (
                 <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400 max-w-xl mx-auto shadow-sm space-y-4">
                   <Activity className="w-12 h-12 mx-auto text-blue-600" />
-                  <h3 className="text-base font-bold text-slate-900 uppercase tracking-wider">{activeNav.replace('-', ' ')} Module</h3>
+                  <h3 className="text-base font-bold text-slate-900 uppercase tracking-wider">
+                    {(() => {
+                      const isOfficer = currentUser && (
+                        currentUser.role === 'OFFICER' || 
+                        currentUser.role === 'DEPT_HEAD' || 
+                        currentUser.role === 'officer' || 
+                        currentUser.role === 'dept_head'
+                      );
+                      const isAdmin = currentUser && (
+                        currentUser.role === 'ADMIN' || 
+                        currentUser.role === 'admin'
+                      );
+                      
+                      if (activeNav === 'my-complaints') {
+                        if (isOfficer) return t('sidebar.assignedComplaints');
+                        if (isAdmin) return t('sidebar.complaintManagement');
+                        return t('sidebar.myComplaints');
+                      }
+                      if (activeNav === 'officer-management') return t('sidebar.officerManagement');
+                      if (activeNav === 'my-profile') return t('sidebar.myProfile');
+                      if (activeNav === 'road-explorer') return t('sidebar.roadExplorer');
+                      if (activeNav === 'ward-health') return t('sidebar.wardHealth');
+                      if (activeNav === 'ai-assistant') return t('sidebar.aiAssistant');
+                      return t(`sidebar.${activeNav}`);
+                    })()} {t("other.placeholder.title")}
+                  </h3>
                   <p className="text-xs text-slate-500 leading-relaxed">
-                    This section is pre-configured to utilize the central **CivicAI** government-wide API framework. Real-time data sync processes will activate once the deployment pipelines are established.
+                    {t("other.placeholder.desc")}
                   </p>
                   <button 
                     onClick={() => setActiveNav('dashboard')}
                     className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-lg transition cursor-pointer"
                   >
-                    Return to Dashboard
+                    {t("other.placeholder.btn")}
                   </button>
                 </div>
               )}
@@ -1841,19 +1902,26 @@ export default function App() {
             <div className="flex items-center gap-3">
               <img src={logo} alt="CivicAI Logo" className="h-12 w-12 object-contain" />
               <div>
-                <span className="text-xl font-bold tracking-tight text-[#27322B] block leading-tight">CiviqAI</span>
-                <span className="text-[10px] text-[#5F6B63] font-semibold uppercase tracking-wider block">Smart Grievances. Stronger Cities.</span>
+                <span className="text-xl font-bold tracking-tight text-[#27322B] block leading-tight">{t("landing.title")}</span>
+                <span className="text-[10px] text-[#5F6B63] font-semibold uppercase tracking-wider block">{t("landing.subtitle")}</span>
               </div>
             </div>
 
             <nav className="hidden lg:flex items-center gap-8">
-              {['Home', 'About Us', 'Features', 'How It Works', 'Departments', 'Contact'].map((link, idx) => (
+              {[
+                { label: t("landing.nav.home"), path: "home" },
+                { label: t("landing.nav.about"), path: "about-us" },
+                { label: t("landing.nav.features"), path: "features" },
+                { label: t("landing.nav.how"), path: "how-it-works" },
+                { label: t("landing.nav.depts"), path: "departments" },
+                { label: t("landing.nav.contact"), path: "contact" }
+              ].map((link, idx) => (
                 <a 
                   key={idx} 
-                  href={`#${link.toLowerCase().replace(/\s+/g, '-')}`} 
+                  href={`#${link.path}`} 
                   className={`text-sm font-semibold hover:text-[#569140] transition ${idx === 0 ? 'text-[#569140] border-b-2 border-[#569140] pb-1' : 'text-[#5F6B63]'}`}
                 >
-                  {link}
+                  {link.label}
                 </a>
               ))}
             </nav>
@@ -1865,21 +1933,32 @@ export default function App() {
                   className="bg-[#6FB555] hover:bg-[#569140] text-white font-bold text-sm px-5 py-2.5 rounded-[10px] shadow-sm transition cursor-pointer flex items-center gap-1.5"
                 >
                   <Activity className="w-4 h-4" />
-                  Go to Dashboard
+                  {t("landing.btn.dashboard")}
                 </button>
               ) : (
                 <>
+                  {/* Language Selector Dropdown on landing page */}
+                  <select
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value as any)}
+                    className="bg-white border border-[#E3ECD9] rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer"
+                  >
+                    <option value="en">English (ENG)</option>
+                    <option value="hi">हिंदी (HIN)</option>
+                    <option value="te">తెలుగు (TEL)</option>
+                  </select>
+                  
                   <button 
                     onClick={() => { setActiveView('login'); setAuthMode('login'); }}
                     className="border border-[#6FB555] hover:bg-[#F5FAF2] text-[#569140] font-bold text-sm px-5 py-2 rounded-[10px] transition cursor-pointer"
                   >
-                    Login
+                    {t("landing.btn.login")}
                   </button>
                   <button 
                     onClick={() => { setActiveView('login'); setAuthMode('register'); }}
                     className="bg-[#6FB555] hover:bg-[#569140] text-white font-bold text-sm px-5 py-2 rounded-[10px] shadow-sm transition cursor-pointer"
                   >
-                    Register
+                    {t("landing.btn.register")}
                   </button>
                 </>
               )}
@@ -1893,16 +1972,16 @@ export default function App() {
               {/* Left Column Text Content */}
               <div className="lg:col-span-6 space-y-6 z-10 max-w-xl">
                 <span className="bg-[#EEF8E8] text-[#437132] border border-[#C9DEBE] px-3.5 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider inline-block">
-                  🌱 AI-Powered Grievance Redressal for a Better Tomorrow
+                  {t("landing.hero.badge")}
                 </span>
                 
                 <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight text-[#27322B]">
-                  Report. Track. Resolve.<br />
-                  <span className="text-[#569140]">Together for a Better City.</span>
+                  {t("landing.hero.title")}<br />
+                  <span className="text-[#569140]">{t("landing.hero.titleGreen")}</span>
                 </h1>
                 
                 <p className="text-sm md:text-base text-[#5F6B63] leading-relaxed font-medium">
-                  CiviqAI is an AI-powered platform that helps citizens report civic issues, track their status in real-time, and ensures transparent and timely resolution by the right authorities.
+                  {t("landing.hero.desc")}
                 </p>
 
                 <div className="flex flex-wrap gap-4 pt-2">
@@ -1911,14 +1990,14 @@ export default function App() {
                     className="bg-[#569140] hover:bg-[#437132] text-white font-extrabold text-sm px-6 py-3.5 rounded-[12px] shadow-md transition cursor-pointer flex items-center gap-2"
                   >
                     <FileEdit className="w-4 h-4" />
-                    Lodge a Complaint
+                    {t("landing.hero.btnLodge")}
                   </button>
                   <button 
                     onClick={() => { setActiveView('login'); setAuthMode('login'); }}
                     className="bg-white border border-[#E3ECD9] hover:bg-[#F5FAF2] text-[#27322B] font-extrabold text-sm px-6 py-3.5 rounded-[12px] shadow-sm transition cursor-pointer flex items-center gap-2"
                   >
                     <Activity className="w-4 h-4 text-[#569140]" />
-                    Track Complaint
+                    {t("landing.hero.btnTrack")}
                   </button>
                 </div>
 
@@ -1930,7 +2009,7 @@ export default function App() {
                     <img className="inline-block h-8 w-8 rounded-full ring-2 ring-white" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Avatar 3" />
                     <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-[#569140] flex items-center justify-center text-[10px] text-white font-extrabold">2K+</div>
                   </div>
-                  <span className="text-xs text-[#5F6B63] font-semibold">Join 2,000+ citizens making our city better every day.</span>
+                  <span className="text-xs text-[#5F6B63] font-semibold">{t("landing.hero.social")}</span>
                 </div>
               </div>
 
@@ -1949,19 +2028,19 @@ export default function App() {
             <div className="px-6 md:px-12 pb-12">
               <div className="bg-white border border-[#E3ECD9] rounded-[24px] p-8 shadow-sm space-y-8">
                 <div className="text-center space-y-2">
-                  <span className="text-[11px] text-[#569140] font-extrabold uppercase tracking-widest block">Our Features</span>
-                  <h2 className="text-2xl font-black text-[#27322B] tracking-tight">Everything you need for a better tomorrow</h2>
+                  <span className="text-[11px] text-[#569140] font-extrabold uppercase tracking-widest block">{t("landing.features.badge")}</span>
+                  <h2 className="text-2xl font-black text-[#27322B] tracking-tight">{t("landing.features.title")}</h2>
                   <div className="w-12 h-1 bg-[#569140] mx-auto rounded-full mt-2" />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
                   {[
-                    { title: 'Easy Reporting', desc: 'Report issues in seconds with photo, location and easy steps.', icon: Camera, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                    { title: 'AI Verification', desc: 'AI verifies and categorizes complaints for faster processing.', icon: Sparkles, color: 'text-[#569140]', bg: 'bg-[#EEF8E8]' },
-                    { title: 'Real-time Tracking', desc: 'Track your complaint status in real-time, every step of the way.', icon: MapPin, color: 'text-amber-600', bg: 'bg-amber-50' },
-                    { title: 'Right Department', desc: 'Automatically assign to the right department for faster resolution.', icon: Building2, color: 'text-cyan-600', bg: 'bg-cyan-50' },
-                    { title: 'Notifications', desc: 'Get instant updates via notifications and emails about your complaint.', icon: Bell, color: 'text-rose-600', bg: 'bg-rose-50' },
-                    { title: 'Transparency', desc: 'Transparent system with analytics and public insights.', icon: BarChart3, color: 'text-[#569140]', bg: 'bg-[#EEF8E8]' }
+                    { title: t("landing.features.item1Title"), desc: t("landing.features.item1Desc"), icon: Camera, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                    { title: t("landing.features.item2Title"), desc: t("landing.features.item2Desc"), icon: Sparkles, color: 'text-[#569140]', bg: 'bg-[#EEF8E8]' },
+                    { title: t("landing.features.item3Title"), desc: t("landing.features.item3Desc"), icon: MapPin, color: 'text-amber-600', bg: 'bg-amber-50' },
+                    { title: t("landing.features.item4Title"), desc: t("landing.features.item4Desc"), icon: Building2, color: 'text-cyan-600', bg: 'bg-cyan-50' },
+                    { title: t("landing.features.item5Title"), desc: t("landing.features.item5Desc"), icon: Bell, color: 'text-rose-600', bg: 'bg-rose-50' },
+                    { title: t("landing.features.item6Title"), desc: t("landing.features.item6Desc"), icon: BarChart3, color: 'text-[#569140]', bg: 'bg-[#EEF8E8]' }
                   ].map((feat, idx) => {
                     const Icon = feat.icon;
                     return (
@@ -1979,13 +2058,13 @@ export default function App() {
                 <div className="bg-[#F8FCF6] border border-[#E3ECD9] rounded-xl p-4 flex flex-wrap justify-between items-center gap-4 text-xs font-bold text-[#5F6B63]">
                   <div className="flex items-center gap-2 text-[#437132]">
                     <CheckCircle className="w-4 h-4 text-[#569140]" />
-                    Building smarter cities with citizens at the heart of change.
+                    {t("landing.features.footer")}
                   </div>
                   <div className="flex items-center gap-6">
-                    <span className="flex items-center gap-1.5"><Shield className="w-4 h-4 text-[#569140]" /> Secure</span>
-                    <span className="flex items-center gap-1.5"><Activity className="w-4 h-4 text-[#569140]" /> Transparent</span>
-                    <span className="flex items-center gap-1.5"><Award className="w-4 h-4 text-[#569140]" /> Accountable</span>
-                    <span className="flex items-center gap-1.5"><Sparkles className="w-4 h-4 text-[#569140]" /> AI-Powered</span>
+                    <span className="flex items-center gap-1.5"><Shield className="w-4 h-4 text-[#569140]" /> {t("landing.trust.secure")}</span>
+                    <span className="flex items-center gap-1.5"><Activity className="w-4 h-4 text-[#569140]" /> {t("landing.trust.trans")}</span>
+                    <span className="flex items-center gap-1.5"><Award className="w-4 h-4 text-[#569140]" /> {t("landing.trust.acc")}</span>
+                    <span className="flex items-center gap-1.5"><Sparkles className="w-4 h-4 text-[#569140]" /> {t("landing.trust.ai")}</span>
                   </div>
                 </div>
               </div>
@@ -2001,24 +2080,36 @@ export default function App() {
           {/* Top Seal Header */}
           <div className="bg-slate-950 text-white py-2.5 px-6 border-b border-slate-800 text-[10px] flex justify-between items-center shrink-0">
             <div className="flex items-center space-x-2">
-              <span className="font-bold text-amber-500">GOVERNMENT OF TELANGANA</span>
+              <span className="font-bold text-amber-500">{t("auth.govHeader.state")}</span>
               <span className="text-slate-700">|</span>
-              <span>Unified Municipal Grievance Grid</span>
+              <span>{t("auth.govHeader.grid")}</span>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 animate-fade-in">
+              {/* Language Selector on Login view */}
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as any)}
+                className="border border-slate-850 rounded px-2 py-0.5 text-[10px] font-semibold focus:outline-none cursor-pointer"
+                style={{ backgroundColor: '#ffffff', color: '#0f172a' }}
+              >
+                <option value="en" style={{ backgroundColor: '#ffffff', color: '#0f172a' }}>English (ENG)</option>
+                <option value="hi" style={{ backgroundColor: '#ffffff', color: '#0f172a' }}>हिंदी (HIN)</option>
+                <option value="te" style={{ backgroundColor: '#ffffff', color: '#0f172a' }}>తెలుగు (TEL)</option>
+              </select>
+              
               {currentUser && (
                 <button 
                   onClick={() => setActiveView('dashboard')}
                   className="text-white hover:text-[#6FB555] font-bold cursor-pointer text-[10px] uppercase transition-colors"
                 >
-                  Go to Dashboard
+                  {t("landing.btn.dashboard")}
                 </button>
               )}
               <button 
                 onClick={() => setActiveView('landing')} 
                 className="text-[#6FB555] hover:text-[#569140] font-bold cursor-pointer text-[10px] uppercase transition-colors"
               >
-                Back to Home
+                {t("auth.govHeader.back")}
               </button>
             </div>
           </div>
@@ -2034,12 +2125,11 @@ export default function App() {
                 <button 
                   onClick={() => setActiveView('landing')}
                   className="absolute left-6 top-6 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white transition-all shadow-md z-20 cursor-pointer"
-                  title="Back to Home"
+                  title={t("auth.backLandingTooltip")}
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 
-                {/* Hyderabad skyline watermark (opacity 5-10%) */}
                 <svg className="absolute bottom-0 left-0 w-full h-40 opacity-[0.08] pointer-events-none select-none" viewBox="0 0 800 200" fill="currentColor">
                   <path d="M 100 200 L 100 80 L 120 80 L 120 50 L 110 50 L 110 20 L 120 20 L 120 10 L 130 10 L 130 20 L 140 20 L 140 50 L 130 50 L 130 80 L 210 80 L 210 50 L 200 50 L 200 20 L 210 20 L 210 10 L 220 10 L 220 20 L 230 20 L 230 50 L 220 50 L 220 80 L 240 80 L 240 200 Z" />
                   <rect x="140" y="100" width="60" height="100" rx="30" />
@@ -2053,7 +2143,6 @@ export default function App() {
                   <rect x="660" y="110" width="10" height="20" />
                 </svg>
 
-                {/* Faint Logo Watermark in bottom-right */}
                 <div className="absolute -right-10 -bottom-10 opacity-[0.04] pointer-events-none select-none">
                   <Building2 className="w-80 h-80 text-white" />
                 </div>
@@ -2065,27 +2154,27 @@ export default function App() {
                       <img src={logo} alt="CivicAI Logo" className="w-10 h-10 object-contain rounded-lg" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-black tracking-tight text-white">CivicAI</h2>
-                      <p className="text-[9px] uppercase font-bold tracking-widest text-[#C3E39D]">Grievance Network System</p>
+                      <h2 className="text-xl font-black tracking-tight text-white">{t("landing.title")}</h2>
+                      <p className="text-[9px] uppercase font-bold tracking-widest text-[#C3E39D]">{t("auth.mission.sub")}</p>
                     </div>
                   </div>
 
                   {/* Heading & Description */}
                   <div className="space-y-6 pr-4">
                     <h3 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight text-white" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                      Empowering Citizens with Smart Vision Governance.
+                      {t("auth.mission.title")}
                     </h3>
                     <p className="text-sm text-white/80 leading-relaxed font-medium">
-                      Capture infrastructure issues instantly with AI-powered verification, smart categorization, and real-time grievance tracking. CivicAI helps citizens and government departments resolve issues faster through intelligent automation.
+                      {t("auth.mission.desc")}
                     </p>
                   </div>
                 </div>
 
                 {/* Subtext Grid */}
                 <div className="relative z-10 pt-12 text-[10px] text-white/60 font-bold flex gap-4">
-                  <span>✓ Smart Dispatch</span>
-                  <span>✓ Vision Verification</span>
-                  <span>✓ 100% Transparent</span>
+                  <span>{t("auth.mission.badge1")}</span>
+                  <span>{t("auth.mission.badge2")}</span>
+                  <span>{t("auth.mission.badge3")}</span>
                 </div>
               </div>
 
@@ -2105,7 +2194,7 @@ export default function App() {
                           : 'border-transparent text-[#9CA3AF]'
                       }`}
                     >
-                      Grievance Login
+                      {t("auth.tabs.login")}
                     </button>
                     <button 
                       onClick={() => { setAuthMode('register'); setOtpSentMessage(null); }}
@@ -2115,24 +2204,38 @@ export default function App() {
                           : 'border-transparent text-[#9CA3AF]'
                       }`}
                     >
-                      Register Profile
+                      {t("auth.tabs.register")}
                     </button>
                   </div>
 
                   {/* Headings */}
                   <div className="space-y-1.5">
-                    <h3 className="font-extrabold text-[#27322B] text-xl tracking-tight">Secure Gateway Portal</h3>
+                    <h3 className="font-extrabold text-[#27322B] text-xl tracking-tight">{t("auth.gateway.title")}</h3>
                     <p className="text-xs text-[#5F6B63]">
-                      Authenticate securely to access the CivicAI grievance management platform.
+                      {t("auth.gateway.desc")}
                     </p>
                   </div>
 
                   {/* LOGIN FORM */}
                   {authMode === 'login' && (
                     <form onSubmit={handleDirectAuth} className="space-y-4">
+                      {/* Role selection */}
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">{t("auth.fields.loginAs")}</label>
+                        <select
+                          value={authRole}
+                          onChange={(e) => setAuthRole(e.target.value as any)}
+                          className="w-full bg-white border border-[#D9E7D2] rounded-xl px-3 py-2.5 text-xs text-[#27322B] focus:outline-none focus:border-[#6FB555] focus:ring-4 focus:ring-[#6FB555]/10 transition-all cursor-pointer"
+                        >
+                          <option value="citizen">{t("auth.fields.roleCitizen")}</option>
+                          <option value="officer">{t("auth.fields.roleOfficer")}</option>
+                          <option value="admin">{t("auth.fields.roleAdmin")}</option>
+                        </select>
+                      </div>
+
                       {/* Email address field */}
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">Email Address</label>
+                        <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">{t("auth.fields.email")}</label>
                         <div className="relative">
                           <Mail className="absolute left-3 top-3 text-[#8B948C] w-4 h-4" />
                           <input 
@@ -2140,7 +2243,7 @@ export default function App() {
                             required
                             value={authEmail}
                             onChange={(e) => setAuthEmail(e.target.value)}
-                            placeholder="e.g. citizen@civiq.gov"
+                            placeholder={t("auth.fields.emailPlaceholder")}
                             className="w-full bg-white border border-[#D9E7D2] rounded-xl pl-9 pr-4 py-2.5 text-xs text-[#27322B] placeholder-[#8B948C] focus:outline-none focus:border-[#6FB555] focus:ring-4 focus:ring-[#6FB555]/10 transition-all"
                           />
                         </div>
@@ -2149,9 +2252,9 @@ export default function App() {
                       {/* Password field */}
                       <div className="space-y-1">
                         <div className="flex justify-between items-center">
-                          <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">Password</label>
+                          <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">{t("auth.fields.password")}</label>
                           <button type="button" className="text-[10px] font-extrabold text-[#5F6B63] hover:text-[#437132] transition-colors">
-                            Forgot Password?
+                            {t("auth.fields.forgot")}
                           </button>
                         </div>
                         <div className="relative">
@@ -2181,7 +2284,7 @@ export default function App() {
                           className="w-full bg-[#6FB555] hover:bg-[#569140] text-white font-extrabold text-xs py-3 px-4 rounded-[14px] shadow-sm hover:shadow-md hover:-translate-y-[1px] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                         >
                           <LogIn className="w-4 h-4" />
-                          Log In
+                          {t("auth.fields.btnSubmit")}
                         </button>
                         
                         <button 
@@ -2192,7 +2295,7 @@ export default function App() {
                           }}
                           className="w-full bg-white border border-[#6FB555] text-[#569140] hover:bg-[#EEF8E8]/50 font-extrabold text-xs py-2.5 px-4 rounded-[14px] transition-all flex items-center justify-center cursor-pointer"
                         >
-                          Reset Form
+                          {t("auth.fields.btnReset")}
                         </button>
                       </div>
                     </form>
@@ -2203,34 +2306,33 @@ export default function App() {
                     <form onSubmit={handleDirectAuth} className="space-y-4">
                       {/* Role selection */}
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">Register As</label>
+                        <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">{t("auth.fields.registerAs")}</label>
                         <select
                           value={authRole}
                           onChange={(e) => setAuthRole(e.target.value as any)}
-                          className="w-full bg-white border border-[#D9E7D2] rounded-xl px-3 py-2.5 text-xs text-[#27322B] focus:outline-none focus:border-[#6FB555] focus:ring-4 focus:ring-[#6FB555]/10 transition-all"
+                          className="w-full bg-white border border-[#D9E7D2] rounded-xl px-3 py-2.5 text-xs text-[#27322B] focus:outline-none focus:border-[#6FB555] focus:ring-4 focus:ring-[#6FB555]/10 transition-all cursor-pointer"
                         >
-                          <option value="citizen">Citizen</option>
-                          <option value="officer">Officer (Department Head / Staff)</option>
-                          <option value="admin">Administrator</option>
+                          <option value="citizen">{t("auth.fields.roleCitizen")}</option>
+                          <option value="admin">{t("auth.fields.roleAdmin")}</option>
                         </select>
                       </div>
 
                       {/* Name input */}
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">Full Legal Name</label>
+                        <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">{t("auth.fields.fullName")}</label>
                         <input 
                           type="text" 
                           required
                           value={authName}
                           onChange={(e) => setAuthName(e.target.value)}
-                          placeholder="Rajesh Patil"
+                          placeholder={t("auth.fields.fullNamePlaceholder")}
                           className="w-full bg-white border border-[#D9E7D2] rounded-xl px-3 py-2.5 text-xs text-[#27322B] placeholder-[#8B948C] focus:outline-none focus:border-[#6FB555] focus:ring-4 focus:ring-[#6FB555]/10 transition-all"
                         />
                       </div>
 
                       {/* Email Address */}
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">Email Address</label>
+                        <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">{t("auth.fields.email")}</label>
                         <input 
                           type="email" 
                           required
@@ -2244,18 +2346,18 @@ export default function App() {
                       {/* Phone & Password row */}
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">Mobile Number</label>
+                          <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">{t("auth.fields.phone")}</label>
                           <input 
                             type="tel" 
                             required
                             value={authPhone}
                             onChange={(e) => setAuthPhone(e.target.value)}
-                            placeholder="+91 99999 88888"
+                            placeholder={t("auth.fields.phonePlaceholder")}
                             className="w-full bg-white border border-[#D9E7D2] rounded-xl px-3 py-2.5 text-xs text-[#27322B] placeholder-[#8B948C] focus:outline-none focus:border-[#6FB555] focus:ring-4 focus:ring-[#6FB555]/10 transition-all"
                           />
                         </div>
                         <div className="space-y-1">
-                          <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">Password</label>
+                          <label className="block text-[10px] font-extrabold text-[#27322B] uppercase">{t("auth.fields.password")}</label>
                           <input 
                             type="password" 
                             required
@@ -2273,7 +2375,7 @@ export default function App() {
                           type="submit"
                           className="w-full bg-[#6FB555] hover:bg-[#569140] text-white font-extrabold text-xs py-3 px-4 rounded-[14px] shadow-sm hover:shadow-md hover:-translate-y-[1px] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                         >
-                          Register Profile
+                          {t("auth.fields.btnRegister")}
                         </button>
                         
                         <button 
@@ -2281,7 +2383,7 @@ export default function App() {
                           onClick={() => setAuthMode('login')}
                           className="w-full bg-white border border-[#6FB555] text-[#569140] hover:bg-[#EEF8E8]/50 font-extrabold text-xs py-2.5 px-4 rounded-[14px] transition-all flex items-center justify-center cursor-pointer"
                         >
-                          Already have an account? Log In
+                          {t("auth.fields.btnLoginRedirect")}
                         </button>
                       </div>
                     </form>
@@ -2291,10 +2393,10 @@ export default function App() {
 
                 {/* Bottom Trust Badges Section */}
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-6 border-t border-slate-100 text-[10px] text-[#5F6B63] font-bold">
-                  <div className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-[#6FB555]" /> Secure Authentication</div>
-                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-[#6FB555]" /> Government Verified</div>
-                  <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-[#6FB555]" /> AI Powered Grid</div>
-                  <div className="flex items-center gap-1.5"><Activity className="w-3.5 h-3.5 text-[#6FB555]" /> Encrypted Session</div>
+                  <div className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-[#6FB555]" /> {t("auth.badges.secure")}</div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-[#6FB555]" /> {t("auth.badges.gov")}</div>
+                  <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-[#6FB555]" /> {t("auth.badges.ai")}</div>
+                  <div className="flex items-center gap-1.5"><Activity className="w-3.5 h-3.5 text-[#6FB555]" /> {t("auth.badges.enc")}</div>
                 </div>
 
               </div>
@@ -2304,7 +2406,7 @@ export default function App() {
 
           {/* National footer band */}
           <div className="bg-slate-950 text-slate-500 py-4 px-6 border-t border-slate-800 text-[10px] text-center shrink-0">
-            © 2026 CivicAI National Grievance Grid. Powered by Central Digital Infrastructure Authority.
+            {t("auth.footer")}
           </div>
 
         </div>
@@ -2326,7 +2428,7 @@ export default function App() {
             <div className="bg-[#569140] text-white p-3.5 flex justify-between items-center shrink-0">
               <div className="flex items-center space-x-2">
                 <Sparkles className="w-4 h-4 text-emerald-400" />
-                <span className="text-xs font-bold">CivicAI Assistant</span>
+                <span className="text-xs font-bold">{t("chat.title")}</span>
               </div>
               <button 
                 onClick={() => setChatOpen(false)}
@@ -2353,7 +2455,7 @@ export default function App() {
                 <div className="flex justify-start">
                   <div className="bg-white text-slate-500 border border-slate-200 p-2.5 rounded-xl flex items-center gap-1">
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>AI routing query...</span>
+                    <span>{t("chat.loading")}</span>
                   </div>
                 </div>
               )}
@@ -2365,7 +2467,7 @@ export default function App() {
                 type="text"
                 value={chatQuery}
                 onChange={(e) => setChatQuery(e.target.value)}
-                placeholder="Ask about water leaks, road repairs..."
+                placeholder={t("chat.placeholder")}
                 className="flex-1 bg-slate-50 border border-[#E3ECD9] rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#6FB555]"
               />
               <button 

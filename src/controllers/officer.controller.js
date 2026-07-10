@@ -1,9 +1,27 @@
 import { OfficerService } from '../services/officer.service.js';
 import { ApiResponse } from '../utils/apiResponse.js';
+import { prisma } from '../config/database.js';
+import { BadRequestError } from '../utils/apiError.js';
 
 export class OfficerController {
   static async create(req, res, next) {
     try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader) {
+        throw new BadRequestError('Authorization token is required');
+      }
+      
+      const token = authHeader.replace('Bearer ', '');
+      const userId = token.replace('mock_jwt_token_for_', '');
+      
+      const adminUser = await prisma.user.findUnique({
+        where: { id: userId }
+      });
+      
+      if (!adminUser || adminUser.role !== 'ADMIN') {
+        throw new BadRequestError('Only Administrators can create Officer credentials');
+      }
+
       const officer = await OfficerService.createOfficer(req.body);
       res.status(201).json(new ApiResponse(201, officer, 'Officer registered successfully'));
     } catch (error) {

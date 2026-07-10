@@ -82,22 +82,7 @@ export class AuthController {
         const passwordHash = password ? await bcrypt.hash(password, 10) : 'hash_otp_created';
 
         if (role === 'officer') {
-          // Find first department to assign
-          const dept = await prisma.department.findFirst();
-          if (!dept) {
-            throw new BadRequestError('No department exists to assign the officer to. Please seed database first.');
-          }
-          account = await prisma.officer.create({
-            data: {
-              name: name || username,
-              username,
-              passwordHash,
-              role: 'OFFICER',
-              departmentId: dept.id
-            },
-            include: { department: true }
-          });
-          isOfficer = true;
+          throw new BadRequestError('Officer registration is restricted to Administrators only.');
         } else {
           account = await prisma.user.create({
             data: {
