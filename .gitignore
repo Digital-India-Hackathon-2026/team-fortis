@@ -28,3 +28,7 @@ yarn-error.log*
 prisma/*.db
 prisma/*.db-journal
 src/generated/
+
+# Cloudflare and build outputs
+dist/
+.wrangler/

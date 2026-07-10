@@ -28,19 +28,33 @@ process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 import http from 'http';
+import https from 'https';
 
 // Keep-Alive Self-Ping Job
 const PING_INTERVAL = 14 * 60 * 1000; // 14 minutes
-const APP_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+const BACKEND_URL = process.env.RENDER_EXTERNAL_URL || process.env.BACKEND_URL || `http://localhost:${PORT}`;
+const FRONTEND_URL = process.env.FRONTEND_URL;
+
+const pingUrl = (url) => {
+  if (!url || url.includes('localhost') || url.includes('127.0.0.1')) return;
+  
+  logger.info(`[Keep-Alive]: Pinging ${url} to prevent sleep...`);
+  const client = url.startsWith('https') ? https : http;
+  
+  client.get(url, (res) => {
+    logger.info(`[Keep-Alive]: Ping response from ${url}: ${res.statusCode}`);
+  }).on('error', (err) => {
+    logger.error(`[Keep-Alive]: Ping failed for ${url}:`, err.message);
+  });
+};
 
 setInterval(() => {
-  if (APP_URL.includes('localhost') || APP_URL.includes('127.0.0.1')) return; // Don't self-ping on localhost
-  
-  logger.info(`[Keep-Alive]: Pinging server at ${APP_URL} to prevent sleep...`);
-  
-  http.get(`${APP_URL}/health`, (res) => {
-    logger.info(`[Keep-Alive]: Ping response status: ${res.statusCode}`);
-  }).on('error', (err) => {
-    logger.error('[Keep-Alive]: Ping failed:', err.message);
-  });
+  // Ping backend
+  if (BACKEND_URL && !BACKEND_URL.includes('localhost')) {
+    pingUrl(`${BACKEND_URL.replace(/\/$/, '')}/health`);
+  }
+  // Ping frontend if provided in env
+  if (FRONTEND_URL && !FRONTEND_URL.includes('localhost')) {
+    pingUrl(FRONTEND_URL);
+  }
 }, PING_INTERVAL);

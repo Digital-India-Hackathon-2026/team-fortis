@@ -1,0 +1,8 @@
+{
+  "name": "civiq-backend",
+  "main": "src/server.js",
+  "compatibility_date": "2026-07-11",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}
