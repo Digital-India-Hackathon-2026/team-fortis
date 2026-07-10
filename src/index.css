@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+@theme {
+  --color-primary-green: #6FB555;
+  --color-primary-hover: #569140;
+  --color-dark-accent-green: #437132;
+  --color-light-green: #C3E39D;
+  --color-surface-green: #EEF8E8;
+  --color-hero-bg: #EAF6E3;
+  --color-main-bg: #FCFDFB;
+  --color-section-bg: #F8FCF6;
+  --color-cards: #FFFFFF;
+  --color-hover-bg: #F5FAF2;
+  --color-default-border: #E3ECD9;
+  --color-active-border: #C9DEBE;
+  --color-dividers: #EDF2EA;
+  --color-primary-text: #27322B;
+  --color-secondary-text: #5F6B63;
+  --color-muted-text: #8B948C;
+  --color-disabled-text: #B6BEB6;
+  --color-primary-cta-gold: #D8B34B;
+  --color-cta-hover: #C89D30;
+  --color-light-gold: #F5E8B8;
+  --color-info-blue: #3B82F6;
+  --color-success-green: #2E8B57;
+  --color-warning-orange: #F59E0B;
+  --color-in-progress: #D97706;
+  --color-error-red: #DC2626;
+}
+
+@layer base {
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  }
+  input, select, textarea {
+    outline: none;
+    transition: all 0.2s ease-in-out;
+    background-color: #FFFFFF !important;
+    border-color: #E3ECD9 !important;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: #6FB555 !important;
+    box-shadow: 0 0 0 4px rgba(111,181,85,0.15) !important;
+  }
+}
+
