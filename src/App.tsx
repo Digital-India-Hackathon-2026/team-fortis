@@ -11,7 +11,7 @@ import {
   Filter, Plus, UserPlus, FileEdit, HelpCircle, Phone, Mail, Check,
   Camera, ArrowRight, Activity, Trash2, CheckCircle, Mic, MicOff,
   Volume2, VolumeX, Sparkles, X, MessageSquare, Settings, Compass,
-  Star, Download, Share2, Award, ListFilter, AlertCircle, Eye, EyeOff, ChevronLeft
+  Star, Download, Share2, Award, ListFilter, AlertCircle, Eye, EyeOff, ChevronLeft, Droplet, Zap
 } from 'lucide-react';
 import { 
   User, Department, Complaint, ComplaintStatus, 
@@ -2150,8 +2150,232 @@ export default function App() {
                 </div>
               )}
 
+              {/* CONTACT US TAB */}
+              {activeNav === 'contact-us' && (
+                <div className="space-y-8 animate-fade-in pb-12">
+                  {/* Breadcrumb Header */}
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      <span className="cursor-pointer hover:text-slate-600" onClick={() => setActiveNav('dashboard')}>{t("lodge.breadcrumb.dashboard")}</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                      <span className="text-blue-600">{t("sidebar.contactUs")}</span>
+                    </div>
+                    <h2 className="text-2xl font-bold tracking-tight text-slate-900">{t("sidebar.contactUs")}</h2>
+                    <p className="text-xs text-slate-500">Access central municipal helplines, GHMC toll-free numbers, and contact details of all civic departments.</p>
+                  </div>
+
+                  {/* Helplines and Toll-Free Numbers (Top Row) */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* GHMC Central Toll-Free */}
+                    <div className="bg-gradient-to-br from-blue-900 to-blue-950 text-white rounded-2xl p-6 shadow-sm border border-blue-800 space-y-4 hover:shadow-md transition">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-extrabold uppercase bg-blue-800 px-2.5 py-0.5 rounded text-blue-100 tracking-wider">GHMC Helpline</span>
+                        <Building2 className="w-6 h-6 text-blue-300" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-blue-100">Municipal Command Center</h4>
+                        <p className="text-[11px] text-blue-200 mt-1">24/7 central toll-free support for all civic issues in Hyderabad.</p>
+                      </div>
+                      <div className="pt-2">
+                        <a href="tel:21111111" className="block text-center bg-white hover:bg-blue-50 text-blue-950 font-bold text-xs py-2.5 rounded-lg transition-colors shadow">
+                          Call 040-21111111
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* State MyGov Toll-Free */}
+                    <div className="bg-gradient-to-br from-emerald-900 to-emerald-950 text-white rounded-2xl p-6 shadow-sm border border-emerald-800 space-y-4 hover:shadow-md transition">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-extrabold uppercase bg-emerald-800 px-2.5 py-0.5 rounded text-emerald-100 tracking-wider">State Toll-Free</span>
+                        <Phone className="w-6 h-6 text-emerald-300" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-emerald-100">Telangana Municipal Desk</h4>
+                        <p className="text-[11px] text-emerald-200 mt-1">Direct connect to the Secretariat urban redressal command centre.</p>
+                      </div>
+                      <div className="pt-2">
+                        <a href="tel:1100" className="block text-center bg-white hover:bg-emerald-50 text-emerald-950 font-bold text-xs py-2.5 rounded-lg transition-colors shadow">
+                          Call 1100 / 1800-425-5372
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* WhatsApp Grievance Desk */}
+                    <div className="bg-gradient-to-br from-teal-900 to-teal-950 text-white rounded-2xl p-6 shadow-sm border border-teal-800 space-y-4 hover:shadow-md transition">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-extrabold uppercase bg-teal-800 px-2.5 py-0.5 rounded text-teal-100 tracking-wider">WhatsApp Support</span>
+                        <MessageSquare className="w-6 h-6 text-teal-300" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-teal-100">Live Chat Grievance Desk</h4>
+                        <p className="text-[11px] text-teal-200 mt-1">Submit visual proof or file complaint updates directly via WhatsApp chat.</p>
+                      </div>
+                      <div className="pt-2">
+                        <a href="https://wa.me/919154114999" target="_blank" rel="noopener noreferrer" className="block text-center bg-white hover:bg-teal-50 text-teal-950 font-bold text-xs py-2.5 rounded-lg transition-colors shadow">
+                          Text +91 91541 14999
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Department Contact Directory */}
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 pb-1 border-b border-slate-100 flex items-center gap-1.5">
+                      <Building2 className="w-4 h-4 text-blue-600" />
+                      Direct Department Directories
+                    </h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Roads & Infrastructure */}
+                      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow space-y-4 flex flex-col justify-between">
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2.5">
+                            <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+                              <Building2 className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-bold text-slate-900">Roads & Infrastructure</h4>
+                              <p className="text-[10px] text-slate-400 font-medium">Chief Engineer Division — GHMC Central</p>
+                            </div>
+                          </div>
+                          <p className="text-xs text-slate-500 leading-relaxed">
+                            Responsible for repairing potholes, clearing road blockages, structural cave-ins, and maintaining road networks.
+                          </p>
+                          <div className="space-y-2 pt-2 text-xs">
+                            <div className="flex items-center gap-2.5 text-slate-600">
+                              <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span>Direct Phone: <span className="font-semibold text-slate-900">040-23450001</span></span>
+                            </div>
+                            <div className="flex items-center gap-2.5 text-slate-600">
+                              <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span>Support Email: <span className="font-semibold text-slate-900">roads.infrastructure@telangana.gov.in</span></span>
+                            </div>
+                            <div className="flex items-center gap-2.5 text-slate-600">
+                              <Shield className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span>Hotline: <span className="font-semibold text-slate-900">1800-599-4455 (Toll-Free)</span></span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="pt-4 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                          <span>SLA Response: 24 - 48 Hours</span>
+                          <span className="text-blue-600">Telangana State Govt</span>
+                        </div>
+                      </div>
+
+                      {/* Solid Waste & Sanitation */}
+                      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow space-y-4 flex flex-col justify-between">
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2.5">
+                            <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
+                              <Activity className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-bold text-slate-900">Solid Waste & Sanitation</h4>
+                              <p className="text-[10px] text-slate-400 font-medium">Commissioner of Cleanliness — GHMC Sanitation</p>
+                            </div>
+                          </div>
+                          <p className="text-xs text-slate-500 leading-relaxed">
+                            Handles garbage dumps overflows, street sweeping, municipal landfill clearances, and public hygiene enforcement.
+                          </p>
+                          <div className="space-y-2 pt-2 text-xs">
+                            <div className="flex items-center gap-2.5 text-slate-600">
+                              <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span>Direct Phone: <span className="font-semibold text-slate-900">040-23450002</span></span>
+                            </div>
+                            <div className="flex items-center gap-2.5 text-slate-600">
+                              <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span>Support Email: <span className="font-semibold text-slate-900">sanitation.cleanliness@telangana.gov.in</span></span>
+                            </div>
+                            <div className="flex items-center gap-2.5 text-slate-600">
+                              <Shield className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span>Hotline: <span className="font-semibold text-slate-900">1800-425-8899 (Toll-Free)</span></span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="pt-4 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                          <span>SLA Response: 12 - 24 Hours</span>
+                          <span className="text-emerald-600">Telangana State Govt</span>
+                        </div>
+                      </div>
+
+                      {/* Water Supply & Sewerage */}
+                      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow space-y-4 flex flex-col justify-between">
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2.5">
+                            <div className="p-2.5 bg-sky-50 text-sky-600 rounded-xl">
+                              <Droplet className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-bold text-slate-900">Water Supply & Sewerage</h4>
+                              <p className="text-[10px] text-slate-400 font-medium">HMWSSB Operations Desk</p>
+                            </div>
+                          </div>
+                          <p className="text-xs text-slate-500 leading-relaxed">
+                            Responsible for resolving pipeline leakage, clean drinking water supply schedules, and sewerage line blockage.
+                          </p>
+                          <div className="space-y-2 pt-2 text-xs">
+                            <div className="flex items-center gap-2.5 text-slate-600">
+                              <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span>Direct Phone: <span className="font-semibold text-slate-900">040-23450003</span></span>
+                            </div>
+                            <div className="flex items-center gap-2.5 text-slate-600">
+                              <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span>Support Email: <span className="font-semibold text-slate-900">customer-service@hmwssb.gov.in</span></span>
+                            </div>
+                            <div className="flex items-center gap-2.5 text-slate-600">
+                              <Shield className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span>Hotline: <span className="font-semibold text-slate-900">155313 (Metro Customer Care)</span></span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="pt-4 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                          <span>SLA Response: 24 Hours</span>
+                          <span className="text-sky-600">HMWSSB Metro Desk</span>
+                        </div>
+                      </div>
+
+                      {/* Electricity & Streetlights */}
+                      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow space-y-4 flex flex-col justify-between">
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2.5">
+                            <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
+                              <Zap className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-bold text-slate-900">Electricity & Streetlights</h4>
+                              <p className="text-[10px] text-slate-400 font-medium">TSSPDCL Electrical Command Center</p>
+                            </div>
+                          </div>
+                          <p className="text-xs text-slate-500 leading-relaxed">
+                            Handles electrical safety hazards, open structural wire issues, broken power line poles, and dark streetlight arrays.
+                          </p>
+                          <div className="space-y-2 pt-2 text-xs">
+                            <div className="flex items-center gap-2.5 text-slate-600">
+                              <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span>Direct Phone: <span className="font-semibold text-slate-900">040-23450004</span></span>
+                            </div>
+                            <div className="flex items-center gap-2.5 text-slate-600">
+                              <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span>Support Email: <span className="font-semibold text-slate-900">streetlights.power@tsspdcl.gov.in</span></span>
+                            </div>
+                            <div className="flex items-center gap-2.5 text-slate-600">
+                              <Shield className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span>Hotline: <span className="font-semibold text-slate-900">1912 (Electrical Safety Desk)</span></span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="pt-4 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                          <span>SLA Response: 4 - 12 Hours</span>
+                          <span className="text-amber-600">TSSPDCL Central</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* OTHER TABS PLACEHOLDERS */}
-              {!['dashboard', 'lodge', 'track', 'road-explorer'].includes(activeNav) && (
+              {!['dashboard', 'lodge', 'track', 'road-explorer', 'contact-us'].includes(activeNav) && (
                 <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400 max-w-xl mx-auto shadow-sm space-y-4">
                   <Activity className="w-12 h-12 mx-auto text-blue-600" />
                   <h3 className="text-base font-bold text-slate-900 uppercase tracking-wider">
