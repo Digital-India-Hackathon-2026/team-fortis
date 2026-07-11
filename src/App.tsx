@@ -1679,8 +1679,8 @@ export default function App() {
                               return (
                                 <div key={idx} className="flex-1 flex flex-col items-center text-center relative z-10">
                                   <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs border-2 transition-all ${
-                                    statusState === 'completed' ? 'bg-emerald-500 border-emerald-500 text-white shadow' :
-                                    statusState === 'current' ? 'bg-blue-600 border-blue-600 text-white ring-4 ring-blue-100 shadow' :
+                                    statusState === 'completed' ? 'bg-[#1e3a8a] border-[#1e3a8a] text-white shadow' :
+                                    statusState === 'current' ? 'bg-[#1e3a8a] border-[#1e3a8a] text-white ring-4 ring-blue-100 shadow' :
                                     'bg-white border-slate-200 text-slate-400'
                                   }`}>
                                     {statusState === 'completed' ? <Check className="w-4 h-4" /> : idx + 1}
@@ -1860,7 +1860,9 @@ export default function App() {
                                   {officers
                                     .filter(o => {
                                       const deptId = currentUser?.departmentId || selectedComplaintDetails?.complaint?.departmentId;
-                                      return (!deptId || o.departmentId === deptId) && (o.role === 'OFFICER' || o.role === 'officer');
+                                      return (!deptId || o.departmentId === deptId) && 
+                                             (o.role === 'OFFICER' || o.role === 'officer') &&
+                                             o.name.toLowerCase().includes('officer');
                                     })
                                     .map(o => (
                                       <option key={o.id} value={o.id}>
