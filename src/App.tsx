@@ -705,14 +705,19 @@ export default function App() {
     return matchesSearch && matchesStatus && matchesSeverity;
   });
 
-  const isOfficerOrAdmin = currentUser && (
-    currentUser.role === 'OFFICER' || 
+  const isDeptHeadOrAdmin = currentUser && (
     currentUser.role === 'DEPT_HEAD' || 
-    currentUser.role === 'officer' || 
     currentUser.role === 'dept_head' ||
     currentUser.role === 'ADMIN' || 
     currentUser.role === 'admin'
   );
+
+  const isFieldOfficer = currentUser && (
+    currentUser.role === 'OFFICER' || 
+    currentUser.role === 'officer'
+  );
+
+  const isOfficerOrAdmin = isDeptHeadOrAdmin || isFieldOfficer;
 
   return (
     <div className="min-h-screen bg-main-bg text-primary-text font-sans flex antialiased animate-fade-in">
@@ -1910,8 +1915,8 @@ export default function App() {
                           </div>
                         </div>
 
-                        {/* Officer Allocation (Admin/Officer Only) */}
-                        {isOfficerOrAdmin && selectedComplaintDetails.complaint.status !== 'Resolved' && selectedComplaintDetails.complaint.status !== 'Rejected' && (
+                        {/* Officer Allocation (Admin Only) */}
+                        {isDeptHeadOrAdmin && selectedComplaintDetails.complaint.status !== 'Resolved' && selectedComplaintDetails.complaint.status !== 'Rejected' && (
                           <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm text-xs">
                             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 pb-2 border-b border-slate-100 flex items-center gap-1.5">
                               <Users className="w-4 h-4 text-blue-600" />
@@ -1969,8 +1974,8 @@ export default function App() {
                           </div>
                         )}
 
-                        {/* Update Citizen & Stage Progress (Admin/Officer Only) */}
-                        {isOfficerOrAdmin && selectedComplaintDetails.complaint.status !== 'Resolved' && selectedComplaintDetails.complaint.status !== 'Rejected' && (
+                        {/* Update Citizen & Stage Progress (Officer Only) */}
+                        {isFieldOfficer && selectedComplaintDetails.complaint.status !== 'Resolved' && selectedComplaintDetails.complaint.status !== 'Rejected' && (
                           <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm text-xs animate-fade-in">
                             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 pb-2 border-b border-slate-100 flex items-center gap-1.5 font-bold">
                               <CheckCircle2 className="w-4 h-4 text-[#1e3a8a]" />
