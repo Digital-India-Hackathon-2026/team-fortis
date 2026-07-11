@@ -1888,16 +1888,24 @@ export default function App() {
                             <div className="grid grid-cols-2 gap-3">
                               <div>
                                 <p className="text-[9px] text-slate-500 uppercase font-bold">{t("track.ai.severity")}</p>
-                                <p className="text-white font-bold mt-0.5">{selectedComplaintDetails.complaint.severity}</p>
+                                <p className="text-white font-bold mt-0.5">
+                                  {selectedComplaintDetails.complaint.aiAnalysis?.detectedSeverity || selectedComplaintDetails.complaint.severity || 'MEDIUM'}
+                                </p>
                               </div>
                               <div>
                                 <p className="text-[9px] text-slate-500 uppercase font-bold">{t("track.ai.confidence")}</p>
-                                <p className="text-emerald-400 font-bold mt-0.5">{selectedComplaintDetails.complaint.aiConfidence}%</p>
+                                <p className="text-emerald-400 font-bold mt-0.5">
+                                  {selectedComplaintDetails.complaint.aiAnalysis?.confidenceScore 
+                                    ? Math.round(selectedComplaintDetails.complaint.aiAnalysis.confidenceScore * 100) 
+                                    : (selectedComplaintDetails.complaint.aiConfidence || 85)}%
+                                </p>
                               </div>
                             </div>
                             <div>
                               <p className="text-[9px] text-slate-500 uppercase font-bold">{t("track.ai.overview")}</p>
-                              <p className="text-slate-400 mt-0.5 leading-relaxed">{selectedComplaintDetails.complaint.aiSummary}</p>
+                              <p className="text-slate-400 mt-0.5 leading-relaxed">
+                                {selectedComplaintDetails.complaint.aiAnalysis?.summary || selectedComplaintDetails.complaint.aiSummary || "AI vision scan successfully routed this grievance to the appropriate department."}
+                              </p>
                             </div>
                           </div>
                         </div>

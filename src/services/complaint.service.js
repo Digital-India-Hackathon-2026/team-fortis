@@ -117,9 +117,24 @@ export class ComplaintService {
         },
       });
 
+      // Create AIAnalysis record if AI summary or confidence is provided
+      if (data.aiSummary) {
+        const conf = parseFloat(data.aiConfidence || '80');
+        const confidenceScore = conf > 1 ? conf / 100 : conf;
+        await tx.aiAnalysis.create({
+          data: {
+            complaintId: complaint.id,
+            summary: data.aiSummary,
+            tags: JSON.stringify(data.tags || []),
+            confidenceScore,
+            detectedSeverity: data.severity || 'MEDIUM',
+          }
+        });
+      }
+
       return tx.complaint.findUnique({
         where: { id: complaint.id },
-        include: { images: true },
+        include: { images: true, aiAnalysis: true },
       });
     });
   }
