@@ -1412,90 +1412,87 @@ export default function App() {
                           </button>
                         </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-                          {/* Left Column: Form Fields */}
-                          <div className="lg:col-span-4 space-y-3 flex flex-col justify-between">
-                            <div className="space-y-3.5">
-                              <div>
-                                <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1">{t("lodge.field.state")}</label>
-                                <input 
-                                  type="text" 
-                                  value={stateName}
-                                  onChange={(e) => setStateName(e.target.value)}
-                                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 focus:bg-white text-slate-750 font-medium"
-                                />
-                              </div>
-                              <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                  <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1">{t("lodge.field.district")}</label>
-                                  <input 
-                                    type="text" 
-                                    value={districtName}
-                                    onChange={(e) => setDistrictName(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 focus:bg-white text-slate-750 font-medium"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1">{t("lodge.field.ward")}</label>
-                                  <input 
-                                    type="text" 
-                                    value={wardNo}
-                                    onChange={(e) => setWardNo(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 focus:bg-white text-slate-750 font-medium"
-                                  />
-                                </div>
-                              </div>
-                              <div>
-                                <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1">{t("lodge.field.street")}</label>
-                                <input 
-                                  type="text" 
-                                  value={streetName}
-                                  onChange={(e) => setStreetName(e.target.value)}
-                                  placeholder={t("lodge.field.streetPlaceholder")}
-                                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 focus:bg-white text-slate-750 font-medium"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1">{t("lodge.field.landmark")}</label>
-                                <input 
-                                  type="text" 
-                                  value={landmark}
-                                  onChange={(e) => setLandmark(e.target.value)}
-                                  placeholder={t("lodge.field.landmarkPlaceholder")}
-                                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 focus:bg-white text-slate-750 font-medium"
-                                />
-                              </div>
-                            </div>
-
-                            {address && (
-                              <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 text-xs text-slate-600 flex items-start gap-2 mt-auto">
-                                <MapPin className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
-                                <div>
-                                  <p className="font-bold text-slate-700">{t("lodge.location.coords")}</p>
-                                  <p className="mt-0.5 text-[11px] text-slate-500 leading-relaxed">{address}</p>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Right Column: Interactive Map */}
-                          <div className="lg:col-span-8 w-full aspect-[16/9] min-h-[350px] rounded-xl overflow-hidden border border-slate-200 relative">
-                            <InteractiveMap 
-                              complaints={[]}
-                              selectedComplaintId={null}
-                              onSelectComplaint={() => {}}
-                              interactiveMode="pin"
-                              pinnedLat={latitude}
-                              pinnedLng={longitude}
-                              onPinSelect={(lat, lng, addr) => {
-                                setLatitude(lat);
-                                setLongitude(lng);
-                                setAddress(addr);
-                                showToast('Location coordinates pinned successfully!', 'success');
-                              }}
-                              height="h-full"
+                        {/* Form Inputs Grid (Shifted Above) */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1">{t("lodge.field.state")}</label>
+                            <input 
+                              type="text" 
+                              value={stateName}
+                              onChange={(e) => setStateName(e.target.value)}
+                              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 focus:bg-white text-slate-750 font-medium"
                             />
                           </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1">{t("lodge.field.district")}</label>
+                            <input 
+                              type="text" 
+                              value={districtName}
+                              onChange={(e) => setDistrictName(e.target.value)}
+                              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 focus:bg-white text-slate-750 font-medium"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1">{t("lodge.field.ward")}</label>
+                            <input 
+                              type="text" 
+                              value={wardNo}
+                              onChange={(e) => setWardNo(e.target.value)}
+                              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 focus:bg-white text-slate-750 font-medium"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1">{t("lodge.field.street")}</label>
+                            <input 
+                              type="text" 
+                              value={streetName}
+                              onChange={(e) => setStreetName(e.target.value)}
+                              placeholder={t("lodge.field.streetPlaceholder")}
+                              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 focus:bg-white text-slate-750 font-medium"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1">{t("lodge.field.landmark")}</label>
+                            <input 
+                              type="text" 
+                              value={landmark}
+                              onChange={(e) => setLandmark(e.target.value)}
+                              placeholder={t("lodge.field.landmarkPlaceholder")}
+                              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 focus:bg-white text-slate-750 font-medium"
+                            />
+                          </div>
+                        </div>
+
+                        {address && (
+                          <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 text-xs text-slate-600 flex items-start gap-2">
+                            <MapPin className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
+                            <div>
+                              <p className="font-bold text-slate-700">{t("lodge.location.coords")}</p>
+                              <p className="mt-0.5 text-[11px] text-slate-500 leading-relaxed">{address}</p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Full Width 16:9 Leaflet Map */}
+                        <div className="w-full aspect-[16/9] min-h-[350px] rounded-xl overflow-hidden border border-slate-200 relative">
+                          <InteractiveMap 
+                            complaints={[]}
+                            selectedComplaintId={null}
+                            onSelectComplaint={() => {}}
+                            interactiveMode="pin"
+                            pinnedLat={latitude}
+                            pinnedLng={longitude}
+                            onPinSelect={(lat, lng, addr) => {
+                              setLatitude(lat);
+                              setLongitude(lng);
+                              setAddress(addr);
+                              showToast('Location coordinates pinned successfully!', 'success');
+                            }}
+                            height="h-full"
+                          />
                         </div>
                       </div>
 
