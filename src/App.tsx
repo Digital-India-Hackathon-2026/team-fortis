@@ -1859,78 +1859,7 @@ export default function App() {
                           </div>
                         </div>
 
-                        {/* Checklist validation items & Before/After Images */}
-                        {!(currentUser && (
-                          currentUser.role === 'OFFICER' || 
-                          currentUser.role === 'DEPT_HEAD' || 
-                          currentUser.role === 'officer' || 
-                          currentUser.role === 'dept_head' ||
-                          currentUser.role === 'ADMIN' || 
-                          currentUser.role === 'admin'
-                        )) && (
-                          <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-6 shadow-sm">
-                            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">{t("track.validation.title")}</h4>
-                              <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">{t("track.validation.badge")}</span>
-                            </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              <div className="space-y-3">
-                                {[
-                                  { label: t("track.validation.check1"), passed: true },
-                                  { label: t("track.validation.check2"), passed: true },
-                                  { label: t("track.validation.check3"), passed: true },
-                                  { label: t("track.validation.check4"), passed: selectedComplaintDetails.complaint.status === 'Resolved' }
-                                ].map((item, idx) => (
-                                  <div key={idx} className="flex items-center gap-2 text-xs">
-                                    {item.passed ? (
-                                      <Check className="w-4.5 h-4.5 text-emerald-600 shrink-0" />
-                                    ) : (
-                                      <AlertCircle className="w-4.5 h-4.5 text-slate-300 shrink-0" />
-                                    )}
-                                    <span className={item.passed ? 'text-slate-700 font-medium' : 'text-slate-400'}>{item.label}</span>
-                                  </div>
-                                ))}
-                              </div>
-
-                              {/* Side-by-side Before/After media cards */}
-                              {showBeforeAfter && (
-                                <div className="space-y-3">
-                                  <p className="text-[10px] text-slate-400 font-bold uppercase">{t("track.beforeAfter.title")}</p>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <div className="space-y-1">
-                                      <img 
-                                        src={selectedComplaintDetails.complaint.imageUrl || undefined} 
-                                        alt="Before" 
-                                        className="h-24 w-full object-cover rounded-lg border border-slate-200"
-                                      />
-                                      <p className="text-[9px] text-center font-bold text-slate-500">{t("track.beforeAfter.before")}</p>
-                                    </div>
-                                    <div className="space-y-1">
-                                      {selectedComplaintDetails.complaint.status === 'Resolved' ? (
-                                        <div className="relative">
-                                          <img 
-                                            src={selectedComplaintDetails.complaint.imageUrl || undefined} 
-                                            alt="After" 
-                                            className="h-24 w-full object-cover rounded-lg border border-slate-200"
-                                          />
-                                          <div className="absolute inset-0 bg-emerald-500/10 flex items-center justify-center">
-                                            <Check className="w-8 h-8 text-emerald-600 bg-white/95 rounded-full p-1 border-2 border-emerald-500 shadow" />
-                                          </div>
-                                        </div>
-                                      ) : (
-                                        <div className="h-24 w-full bg-slate-100 rounded-lg flex items-center justify-center border border-dashed border-slate-200 text-center p-2">
-                                          <span className="text-[9px] text-slate-400 font-bold uppercase">{t("track.beforeAfter.awaiting")}</span>
-                                        </div>
-                                      )}
-                                      <p className="text-[9px] text-center font-bold text-slate-500">{t("track.beforeAfter.after")}</p>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
 
                       </div>
 
