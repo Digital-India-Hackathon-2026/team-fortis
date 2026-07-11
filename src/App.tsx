@@ -623,6 +623,65 @@ export default function App() {
     }
   };
 
+  const handleAllocateOfficerAndStatus = async () => {
+    if (!selectedComplaintId || !currentUser) return;
+
+    if (!selectedAllocateOfficerId && !selectedUpdateStatus) {
+      showToast('Please select an officer to allocate or select a progress stage to update', 'error');
+      return;
+    }
+
+    try {
+      let assignSuccess = true;
+      let statusSuccess = true;
+      let errorMsg = '';
+
+      if (selectedAllocateOfficerId) {
+        const res = await fetch(`/api/complaints/${selectedComplaintId}/assign`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ officerId: selectedAllocateOfficerId })
+        });
+        if (!res.ok) {
+          assignSuccess = false;
+          const data = await res.json();
+          errorMsg = data.message || 'Failed to allocate officer';
+        }
+      }
+
+      if (selectedUpdateStatus) {
+        const res = await fetch(`/api/complaints/${selectedComplaintId}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            status: selectedUpdateStatus,
+            remarks: updateRemarks.trim() || 'Status updated by Admin',
+            changedById: currentUser.id,
+            changedByType: 'OFFICER'
+          })
+        });
+        if (!res.ok) {
+          statusSuccess = false;
+          const data = await res.json();
+          errorMsg = data.message || 'Failed to update progress stage';
+        }
+      }
+
+      if (assignSuccess && statusSuccess) {
+        showToast('Officer and status checkpoint updated successfully!', 'success');
+        setSelectedAllocateOfficerId('');
+        setSelectedUpdateStatus('');
+        setUpdateRemarks('');
+        fetchComplaintDetails(selectedComplaintId);
+        fetchComplaints();
+      } else {
+        showToast(errorMsg || 'Failed to complete updates', 'error');
+      }
+    } catch (e) {
+      showToast('Error updating details', 'error');
+    }
+  };
+
   const handleUpdateStatus = async () => {
     if (!selectedComplaintId || !currentUser) return;
     if (!selectedUpdateStatus) {
@@ -1918,25 +1977,33 @@ export default function App() {
                         {/* Officer Allocation (Admin Only) */}
                         {isDeptHeadOrAdmin && selectedComplaintDetails.complaint.status !== 'Resolved' && selectedComplaintDetails.complaint.status !== 'Rejected' && (
                           <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm text-xs">
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 pb-2 border-b border-slate-100 flex items-center gap-1.5">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 pb-2 border-b border-slate-100 flex items-center gap-1.5 font-bold">
                               <Users className="w-4 h-4 text-blue-600" />
-                              Officer Allocation
+                              Officer & Status Allocation
                             </h4>
                             
                             <div className="space-y-3">
                               <p className="text-[11px] text-slate-500 leading-relaxed">
-                                Allocate a field officer to inspect and resolve this complaint.
+                                Allocate a field officer and advance the status checkpoint for this grievance.
                               </p>
 
-                              {selectedComplaintDetails.complaint.officer ? (
-                                <div className="bg-[#EEF8E8] border border-[#C9DEBE] p-2.5 rounded-lg text-[#2E8B57] font-semibold text-[11px]">
-                                  Currently Allocated: {selectedComplaintDetails.complaint.officer.name}
+                              <div className="space-y-1.5">
+                                <div className="flex justify-between items-center bg-slate-50 border border-slate-200 p-2 rounded-lg text-[11px] text-slate-700 font-semibold">
+                                  <span>Grievance Stage:</span>
+                                  <span className="font-bold text-[#1e3a8a]">{selectedComplaintDetails.complaint.status}</span>
                                 </div>
-                              ) : (
-                                <div className="bg-amber-50 border border-amber-200 p-2.5 rounded-lg text-amber-700 font-semibold text-[11px]">
-                                  Status: Unallocated
-                                </div>
-                              )}
+                                {selectedComplaintDetails.complaint.officer ? (
+                                  <div className="bg-[#EEF8E8] border border-[#C9DEBE] p-2.5 rounded-lg text-[#2E8B57] font-semibold text-[11px] flex justify-between items-center">
+                                    <span>Currently Allocated:</span>
+                                    <span>{selectedComplaintDetails.complaint.officer.name}</span>
+                                  </div>
+                                ) : (
+                                  <div className="bg-amber-50 border border-amber-200 p-2.5 rounded-lg text-amber-700 font-semibold text-[11px] flex justify-between items-center">
+                                    <span>Allocation Status:</span>
+                                    <span>Unallocated</span>
+                                  </div>
+                                )}
+                              </div>
 
                               <div className="space-y-1">
                                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
@@ -1964,11 +2031,42 @@ export default function App() {
                                 </select>
                               </div>
 
+                              <div className="space-y-1">
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                  Select Progress Stage (Checkpoint)
+                                </label>
+                                <select
+                                  value={selectedUpdateStatus}
+                                  onChange={(e) => setSelectedUpdateStatus(e.target.value)}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 focus:bg-white cursor-pointer font-medium text-slate-750"
+                                >
+                                  <option value="">-- Advance Checkpoint --</option>
+                                  <option value="VERIFIED">Stage 2: Verified (Field verified)</option>
+                                  <option value="IN_PROGRESS">Stage 3: In Progress (Action dispatched)</option>
+                                  <option value="RESOLVED">Stage 4: Resolved (Work certified)</option>
+                                  <option value="VALIDATED">Stage 5: Validated (Citizen confirmed)</option>
+                                  <option value="REJECTED">Reject Grievance</option>
+                                </select>
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                  Progress Update / Remarks
+                                </label>
+                                <textarea
+                                  value={updateRemarks}
+                                  onChange={(e) => setUpdateRemarks(e.target.value)}
+                                  placeholder="Provide optional progress details or instructions..."
+                                  rows={2}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs focus:outline-none focus:border-blue-500 focus:bg-white leading-relaxed text-slate-700 font-medium"
+                                />
+                              </div>
+
                               <button
-                                onClick={handleAllocateOfficer}
+                                onClick={handleAllocateOfficerAndStatus}
                                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs py-2 px-3 rounded-lg transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
                               >
-                                Allocate Officer
+                                Allocate & Update
                               </button>
                             </div>
                           </div>
