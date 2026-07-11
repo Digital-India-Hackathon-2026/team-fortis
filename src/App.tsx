@@ -1688,6 +1688,37 @@ export default function App() {
                           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">{t("track.flow.title")}</h4>
                           
                           <div className="flex flex-col sm:flex-row justify-between items-center gap-6 relative">
+                            {/* Connecting Line Segments */}
+                            <div className="absolute top-4 left-0 right-0 h-0.5 hidden sm:block">
+                              {[0, 1, 2, 3].map((segmentIdx) => {
+                                const complaintStatus = selectedComplaintDetails.complaint.status;
+                                const statusMap: Record<string, number> = {
+                                  'Pending': 0, 'PENDING': 0,
+                                  'Verified': 1, 'VERIFIED': 1,
+                                  'In Progress': 2, 'IN_PROGRESS': 2,
+                                  'Resolved': 3, 'RESOLVED': 3,
+                                  'Validated': 4, 'VALIDATED': 4,
+                                  'Rejected': -1, 'REJECTED': -1
+                                };
+                                const currentStatusIdx = statusMap[complaintStatus] ?? 0;
+                                const isSegmentCompleted = segmentIdx < currentStatusIdx;
+
+                                return (
+                                  <div
+                                    key={segmentIdx}
+                                    style={{
+                                      position: 'absolute',
+                                      left: `${(segmentIdx * 20) + 10}%`,
+                                      width: '20%',
+                                      height: '100%',
+                                      backgroundColor: isSegmentCompleted ? '#1e3a8a' : '#e2e8f0',
+                                      transition: 'background-color 0.3s ease'
+                                    }}
+                                  />
+                                );
+                              })}
+                            </div>
+
                             {[
                               { label: t("track.flow.lodged"), status: 'Pending', desc: t("track.flow.lodgedDesc") },
                               { label: t("track.flow.verified"), status: 'Verified', desc: t("track.flow.verifiedDesc") },
