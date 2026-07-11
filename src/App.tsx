@@ -101,6 +101,7 @@ export default function App() {
   // Citizen Rating and Feedback states
   const [citizenRating, setCitizenRating] = useState(0);
   const [citizenFeedbackText, setCitizenFeedbackText] = useState('');
+  const [selectedAllocateOfficerId, setSelectedAllocateOfficerId] = useState<string>('');
 
   // Voice Dictation (Web Speech API) states
   const [isListening, setIsListening] = useState(false);
@@ -183,15 +184,17 @@ export default function App() {
   // Initial load
   useEffect(() => {
     fetchDepartments();
-    fetchComplaints();
     fetchOfficers();
     
     const savedUser = localStorage.getItem('civiq_user');
     const savedToken = localStorage.getItem('civiq_token');
     if (savedUser && savedToken) {
-      setCurrentUser(JSON.parse(savedUser));
+      const parsedUser = JSON.parse(savedUser);
+      setCurrentUser(parsedUser);
       setAuthToken(savedToken);
       setActiveView('dashboard');
+    } else {
+      fetchComplaints();
     }
   }, []);
 
@@ -591,6 +594,33 @@ export default function App() {
     fetchComplaintDetails(selectedComplaintId);
   };
 
+  const handleAllocateOfficer = async () => {
+    if (!selectedComplaintId) return;
+    if (!selectedAllocateOfficerId) {
+      showToast('Please select an officer to allocate', 'error');
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/complaints/${selectedComplaintId}/assign`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ officerId: selectedAllocateOfficerId })
+      });
+      if (res.ok) {
+        showToast('Officer allocated successfully!', 'success');
+        setSelectedAllocateOfficerId('');
+        fetchComplaintDetails(selectedComplaintId);
+        fetchComplaints();
+      } else {
+        const data = await res.json();
+        showToast(data.message || 'Failed to allocate officer', 'error');
+      }
+    } catch (e) {
+      showToast('Error allocating officer', 'error');
+    }
+  };
+
   // Floating AI Chat assistant submit
   const handleChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -634,6 +664,15 @@ export default function App() {
 
     return matchesSearch && matchesStatus && matchesSeverity;
   });
+
+  const isOfficerOrAdmin = currentUser && (
+    currentUser.role === 'OFFICER' || 
+    currentUser.role === 'DEPT_HEAD' || 
+    currentUser.role === 'officer' || 
+    currentUser.role === 'dept_head' ||
+    currentUser.role === 'ADMIN' || 
+    currentUser.role === 'admin'
+  );
 
   return (
     <div className="min-h-screen bg-main-bg text-primary-text font-sans flex antialiased animate-fade-in">
@@ -1679,68 +1718,77 @@ export default function App() {
                         </div>
 
                         {/* Checklist validation items & Before/After Images */}
-                        <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-6 shadow-sm">
-                          <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">{t("track.validation.title")}</h4>
-                            <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">{t("track.validation.badge")}</span>
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-3">
-                              {[
-                                { label: t("track.validation.check1"), passed: true },
-                                { label: t("track.validation.check2"), passed: true },
-                                { label: t("track.validation.check3"), passed: true },
-                                { label: t("track.validation.check4"), passed: selectedComplaintDetails.complaint.status === 'Resolved' }
-                              ].map((item, idx) => (
-                                <div key={idx} className="flex items-center gap-2 text-xs">
-                                  {item.passed ? (
-                                    <Check className="w-4.5 h-4.5 text-emerald-600 shrink-0" />
-                                  ) : (
-                                    <AlertCircle className="w-4.5 h-4.5 text-slate-300 shrink-0" />
-                                  )}
-                                  <span className={item.passed ? 'text-slate-700 font-medium' : 'text-slate-400'}>{item.label}</span>
-                                </div>
-                              ))}
+                        {!(currentUser && (
+                          currentUser.role === 'OFFICER' || 
+                          currentUser.role === 'DEPT_HEAD' || 
+                          currentUser.role === 'officer' || 
+                          currentUser.role === 'dept_head' ||
+                          currentUser.role === 'ADMIN' || 
+                          currentUser.role === 'admin'
+                        )) && (
+                          <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-6 shadow-sm">
+                            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">{t("track.validation.title")}</h4>
+                              <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">{t("track.validation.badge")}</span>
                             </div>
 
-                            {/* Side-by-side Before/After media cards */}
-                            {showBeforeAfter && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div className="space-y-3">
-                                <p className="text-[10px] text-slate-400 font-bold uppercase">{t("track.beforeAfter.title")}</p>
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div className="space-y-1">
-                                    <img 
-                                      src={selectedComplaintDetails.complaint.imageUrl || undefined} 
-                                      alt="Before" 
-                                      className="h-24 w-full object-cover rounded-lg border border-slate-200"
-                                    />
-                                    <p className="text-[9px] text-center font-bold text-slate-500">{t("track.beforeAfter.before")}</p>
-                                  </div>
-                                  <div className="space-y-1">
-                                    {selectedComplaintDetails.complaint.status === 'Resolved' ? (
-                                      <div className="relative">
-                                        <img 
-                                          src={selectedComplaintDetails.complaint.imageUrl || undefined} 
-                                          alt="After" 
-                                          className="h-24 w-full object-cover rounded-lg border border-slate-200"
-                                        />
-                                        <div className="absolute inset-0 bg-emerald-500/10 flex items-center justify-center">
-                                          <Check className="w-8 h-8 text-emerald-600 bg-white/95 rounded-full p-1 border-2 border-emerald-500 shadow" />
-                                        </div>
-                                      </div>
+                                {[
+                                  { label: t("track.validation.check1"), passed: true },
+                                  { label: t("track.validation.check2"), passed: true },
+                                  { label: t("track.validation.check3"), passed: true },
+                                  { label: t("track.validation.check4"), passed: selectedComplaintDetails.complaint.status === 'Resolved' }
+                                ].map((item, idx) => (
+                                  <div key={idx} className="flex items-center gap-2 text-xs">
+                                    {item.passed ? (
+                                      <Check className="w-4.5 h-4.5 text-emerald-600 shrink-0" />
                                     ) : (
-                                      <div className="h-24 w-full bg-slate-100 rounded-lg flex items-center justify-center border border-dashed border-slate-200 text-center p-2">
-                                        <span className="text-[9px] text-slate-400 font-bold uppercase">{t("track.beforeAfter.awaiting")}</span>
-                                      </div>
+                                      <AlertCircle className="w-4.5 h-4.5 text-slate-300 shrink-0" />
                                     )}
-                                    <p className="text-[9px] text-center font-bold text-slate-500">{t("track.beforeAfter.after")}</p>
+                                    <span className={item.passed ? 'text-slate-700 font-medium' : 'text-slate-400'}>{item.label}</span>
+                                  </div>
+                                ))}
+                              </div>
+
+                              {/* Side-by-side Before/After media cards */}
+                              {showBeforeAfter && (
+                                <div className="space-y-3">
+                                  <p className="text-[10px] text-slate-400 font-bold uppercase">{t("track.beforeAfter.title")}</p>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div className="space-y-1">
+                                      <img 
+                                        src={selectedComplaintDetails.complaint.imageUrl || undefined} 
+                                        alt="Before" 
+                                        className="h-24 w-full object-cover rounded-lg border border-slate-200"
+                                      />
+                                      <p className="text-[9px] text-center font-bold text-slate-500">{t("track.beforeAfter.before")}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                      {selectedComplaintDetails.complaint.status === 'Resolved' ? (
+                                        <div className="relative">
+                                          <img 
+                                            src={selectedComplaintDetails.complaint.imageUrl || undefined} 
+                                            alt="After" 
+                                            className="h-24 w-full object-cover rounded-lg border border-slate-200"
+                                          />
+                                          <div className="absolute inset-0 bg-emerald-500/10 flex items-center justify-center">
+                                            <Check className="w-8 h-8 text-emerald-600 bg-white/95 rounded-full p-1 border-2 border-emerald-500 shadow" />
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className="h-24 w-full bg-slate-100 rounded-lg flex items-center justify-center border border-dashed border-slate-200 text-center p-2">
+                                          <span className="text-[9px] text-slate-400 font-bold uppercase">{t("track.beforeAfter.awaiting")}</span>
+                                        </div>
+                                      )}
+                                      <p className="text-[9px] text-center font-bold text-slate-500">{t("track.beforeAfter.after")}</p>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            )}
+                              )}
+                            </div>
                           </div>
-                        </div>
+                        )}
 
                       </div>
 
@@ -1775,6 +1823,63 @@ export default function App() {
                             </div>
                           </div>
                         </div>
+
+                        {/* Officer Allocation (Admin/Officer Only) */}
+                        {isOfficerOrAdmin && selectedComplaintDetails.complaint.status !== 'Resolved' && selectedComplaintDetails.complaint.status !== 'Rejected' && (
+                          <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm text-xs">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 pb-2 border-b border-slate-100 flex items-center gap-1.5">
+                              <Users className="w-4 h-4 text-blue-600" />
+                              Officer Allocation
+                            </h4>
+                            
+                            <div className="space-y-3">
+                              <p className="text-[11px] text-slate-500 leading-relaxed">
+                                Allocate a field officer to inspect and resolve this complaint.
+                              </p>
+
+                              {selectedComplaintDetails.complaint.officer ? (
+                                <div className="bg-[#EEF8E8] border border-[#C9DEBE] p-2.5 rounded-lg text-[#2E8B57] font-semibold text-[11px]">
+                                  Currently Allocated: {selectedComplaintDetails.complaint.officer.name}
+                                </div>
+                              ) : (
+                                <div className="bg-amber-50 border border-amber-200 p-2.5 rounded-lg text-amber-700 font-semibold text-[11px]">
+                                  Status: Unallocated
+                                </div>
+                              )}
+
+                              <div className="space-y-1">
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                  Select Field Officer
+                                </label>
+                                <select
+                                  value={selectedAllocateOfficerId}
+                                  onChange={(e) => setSelectedAllocateOfficerId(e.target.value)}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 focus:bg-white cursor-pointer font-medium text-slate-750"
+                                >
+                                  <option value="">-- Choose Officer --</option>
+                                  {officers
+                                    .filter(o => {
+                                      const deptId = currentUser?.departmentId || selectedComplaintDetails?.complaint?.departmentId;
+                                      return (!deptId || o.departmentId === deptId) && (o.role === 'OFFICER' || o.role === 'officer');
+                                    })
+                                    .map(o => (
+                                      <option key={o.id} value={o.id}>
+                                        {o.name}
+                                      </option>
+                                    ))
+                                  }
+                                </select>
+                              </div>
+
+                              <button
+                                onClick={handleAllocateOfficer}
+                                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs py-2 px-3 rounded-lg transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
+                              >
+                                Allocate Officer
+                              </button>
+                            </div>
+                          </div>
+                        )}
 
                         {/* Citizen feedback review stars */}
                         {selectedComplaintDetails.complaint.status === 'Resolved' && (

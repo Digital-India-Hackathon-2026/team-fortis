@@ -26,15 +26,27 @@ export class ComplaintService {
     // Auto-resolve departmentId based on name, category, or title keywords
     let resolvedDepartmentId = data.departmentId || null;
     if (!resolvedDepartmentId) {
-      const matchSource = `${data.departmentName || ''} ${data.category || ''} ${data.title || ''}`.toLowerCase();
-      if (matchSource.includes('water') || matchSource.includes('sewer') || matchSource.includes('drain') || matchSource.includes('leak') || matchSource.includes('flood') || matchSource.includes('waterlog')) {
-        resolvedDepartmentId = 'dept-water';
-      } else if (matchSource.includes('sanitat') || matchSource.includes('garbage') || matchSource.includes('waste') || matchSource.includes('litter') || matchSource.includes('dump') || matchSource.includes('hygeine') || matchSource.includes('smell') || matchSource.includes('odour') || matchSource.includes('mosquito')) {
-        resolvedDepartmentId = 'dept-sanitation';
-      } else if (matchSource.includes('electr') || matchSource.includes('power') || matchSource.includes('wire') || matchSource.includes('current') || matchSource.includes('light') || matchSource.includes('outage')) {
-        resolvedDepartmentId = 'dept-electricity';
-      } else if (matchSource.includes('road') || matchSource.includes('pothole') || matchSource.includes('infra') || matchSource.includes('pavement') || matchSource.includes('sidewalk') || matchSource.includes('footpath')) {
+      const category = (data.category || '').toLowerCase();
+      if (category.includes('road') || category.includes('infra') || category.includes('pothole') || category.includes('hazard')) {
         resolvedDepartmentId = 'dept-roads';
+      } else if (category.includes('sanitat') || category.includes('waste') || category.includes('garbage')) {
+        resolvedDepartmentId = 'dept-sanitation';
+      } else if (category.includes('water') || category.includes('sewer') || category.includes('drain')) {
+        resolvedDepartmentId = 'dept-water';
+      } else if (category.includes('electr') || category.includes('light') || category.includes('power')) {
+        resolvedDepartmentId = 'dept-electricity';
+      } else {
+        // Fallback to title keywords match in prioritised order (roads first, then sanitation, electricity, water)
+        const matchSource = `${data.departmentName || ''} ${data.title || ''}`.toLowerCase();
+        if (matchSource.includes('road') || matchSource.includes('pothole') || matchSource.includes('infra') || matchSource.includes('pavement') || matchSource.includes('sidewalk') || matchSource.includes('footpath')) {
+          resolvedDepartmentId = 'dept-roads';
+        } else if (matchSource.includes('sanitat') || matchSource.includes('garbage') || matchSource.includes('waste') || matchSource.includes('litter') || matchSource.includes('dump') || matchSource.includes('hygeine') || matchSource.includes('smell') || matchSource.includes('odour') || matchSource.includes('mosquito')) {
+          resolvedDepartmentId = 'dept-sanitation';
+        } else if (matchSource.includes('electr') || matchSource.includes('power') || matchSource.includes('wire') || matchSource.includes('current') || matchSource.includes('light') || matchSource.includes('outage')) {
+          resolvedDepartmentId = 'dept-electricity';
+        } else if (matchSource.includes('water') || matchSource.includes('sewer') || matchSource.includes('drain') || matchSource.includes('leak') || matchSource.includes('flood') || matchSource.includes('waterlog')) {
+          resolvedDepartmentId = 'dept-water';
+        }
       }
     }
 
