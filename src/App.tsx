@@ -1414,7 +1414,7 @@ export default function App() {
 
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                           {/* Left Column: Form Fields */}
-                          <div className="lg:col-span-5 space-y-3 flex flex-col justify-between">
+                          <div className="lg:col-span-4 space-y-3 flex flex-col justify-between">
                             <div className="space-y-3.5">
                               <div>
                                 <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1">{t("lodge.field.state")}</label>
@@ -1479,7 +1479,7 @@ export default function App() {
                           </div>
 
                           {/* Right Column: Interactive Map */}
-                          <div className="lg:col-span-7 h-[350px] lg:h-[440px] rounded-xl overflow-hidden border border-slate-200 relative">
+                          <div className="lg:col-span-8 w-full aspect-[16/9] min-h-[350px] rounded-xl overflow-hidden border border-slate-200 relative">
                             <InteractiveMap 
                               complaints={[]}
                               selectedComplaintId={null}
