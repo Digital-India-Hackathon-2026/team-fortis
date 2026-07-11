@@ -1216,7 +1216,7 @@ export default function App() {
                           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">{t("dashboard.map.title")}</h4>
                           <span className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">{t("dashboard.map.badge")}</span>
                         </div>
-                        <div className="h-[460px] rounded-lg overflow-hidden border border-slate-100 relative">
+                        <div className="h-[540px] rounded-lg overflow-hidden border border-slate-100 relative">
                           <InteractiveMap 
                             complaints={complaints}
                             selectedComplaintId={selectedComplaintId}
@@ -1245,28 +1245,6 @@ export default function App() {
                             <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
                             <span>Electric</span>
                           </div>
-                        </div>
-                      </div>
-
-                      {/* Government Announcements */}
-                      <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                          <Award className="w-4 h-4 text-blue-600" /> {t("dashboard.ann.title")}
-                        </h4>
-                        <div className="space-y-3">
-                          {[
-                            { title: t("dashboard.ann.item1Title"), desc: t("dashboard.ann.item1Desc"), date: '3 days ago' },
-                            { title: t("dashboard.ann.item2Title"), desc: t("dashboard.ann.item2Desc"), date: '1 week ago' },
-                            { title: t("dashboard.ann.item3Title"), desc: t("dashboard.ann.item3Desc"), date: '2 weeks ago' }
-                          ].map((item, idx) => (
-                            <div key={idx} className="p-3 bg-slate-50 rounded-xl space-y-1 hover:bg-slate-100 transition-colors">
-                              <div className="flex justify-between items-center">
-                                <h5 className="text-[11px] font-bold text-slate-900">{item.title}</h5>
-                                <span className="text-[9px] text-slate-400">{item.date}</span>
-                              </div>
-                              <p className="text-[10px] text-slate-600 leading-relaxed">{item.desc}</p>
-                            </div>
-                          ))}
                         </div>
                       </div>
 
