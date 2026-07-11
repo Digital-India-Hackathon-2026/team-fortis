@@ -720,21 +720,17 @@ export default function App() {
     }
   };
 
-  // Floating AI Chat assistant submit
-  const handleChatSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatQuery.trim()) return;
-
-    const userMsg = chatQuery;
-    setChatMessages(prev => [...prev, { sender: 'user', text: userMsg }]);
-    setChatQuery('');
+  // Unified AI Assistant message sender
+  const sendChatMessage = async (text: string) => {
+    if (!text.trim()) return;
+    setChatMessages(prev => [...prev, { sender: 'user', text }]);
     setChatLoading(true);
 
     try {
       const res = await fetch('/api/ai/voice-assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: userMsg })
+        body: JSON.stringify({ query: text })
       });
       const data = await res.json();
       if (res.ok) {
@@ -747,6 +743,15 @@ export default function App() {
     } finally {
       setChatLoading(false);
     }
+  };
+
+  // Floating AI Chat assistant submit
+  const handleChatSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatQuery.trim()) return;
+    const query = chatQuery;
+    setChatQuery('');
+    await sendChatMessage(query);
   };
 
   // Filter complaints for viewing list
@@ -2374,8 +2379,154 @@ export default function App() {
                 </div>
               )}
 
+              {/* AI ASSISTANT TAB */}
+              {activeNav === 'ai-assistant' && (
+                <div className="space-y-6 animate-fade-in pb-12">
+                  {/* Breadcrumb Header */}
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      <span className="cursor-pointer hover:text-slate-600" onClick={() => setActiveNav('dashboard')}>{t("lodge.breadcrumb.dashboard")}</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                      <span className="text-blue-600">AI Assistant Workspace</span>
+                    </div>
+                    <h2 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+                      <Sparkles className="w-6 h-6 text-[#569140]" />
+                      CivicAI Digital Assistant
+                    </h2>
+                    <p className="text-xs text-slate-500">Engage with our intelligent routing engine to lodge, analyze, or track civic grievances dynamically.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                    {/* Left Column: Quick Assist */}
+                    <div className="lg:col-span-4 space-y-6 flex flex-col justify-between">
+                      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+                        <div>
+                          <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-1">Quick Action Prompts</h3>
+                          <p className="text-[11px] text-slate-400">Click a preset query to interact with the AI assistant instantly.</p>
+                        </div>
+
+                        <div className="space-y-2.5">
+                          <button 
+                            onClick={() => sendChatMessage("Report a broken streetlight in Ward 12")}
+                            disabled={chatLoading}
+                            className="w-full text-left bg-slate-50 hover:bg-[#F8FCF6] border border-slate-200 hover:border-[#6FB555] rounded-xl p-3 text-xs text-slate-700 font-medium transition cursor-pointer flex items-center justify-between group"
+                          >
+                            <span>Report broken streetlight</span>
+                            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#569140] transition" />
+                          </button>
+                          <button 
+                            onClick={() => sendChatMessage("My drinking water is muddy and has a bad odor")}
+                            disabled={chatLoading}
+                            className="w-full text-left bg-slate-50 hover:bg-[#F8FCF6] border border-slate-200 hover:border-[#6FB555] rounded-xl p-3 text-xs text-slate-700 font-medium transition cursor-pointer flex items-center justify-between group"
+                          >
+                            <span>Report muddy water supply</span>
+                            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#569140] transition" />
+                          </button>
+                          <button 
+                            onClick={() => sendChatMessage("Check the current status of my garbage complaint")}
+                            disabled={chatLoading}
+                            className="w-full text-left bg-slate-50 hover:bg-[#F8FCF6] border border-slate-200 hover:border-[#6FB555] rounded-xl p-3 text-xs text-slate-700 font-medium transition cursor-pointer flex items-center justify-between group"
+                          >
+                            <span>Check status of garbage complaint</span>
+                            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#569140] transition" />
+                          </button>
+                          <button 
+                            onClick={() => sendChatMessage("How do I request a pothole repair on Main Road?")}
+                            disabled={chatLoading}
+                            className="w-full text-left bg-slate-50 hover:bg-[#F8FCF6] border border-slate-200 hover:border-[#6FB555] rounded-xl p-3 text-xs text-slate-700 font-medium transition cursor-pointer flex items-center justify-between group"
+                          >
+                            <span>Lodge pothole repair request</span>
+                            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#569140] transition" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="bg-[#F8FCF6] border border-[#E3ECD9] rounded-2xl p-5 shadow-sm space-y-3">
+                        <div className="flex items-center gap-2 text-[#569140]">
+                          <Shield className="w-5 h-5 shrink-0" />
+                          <h4 className="text-xs font-bold uppercase tracking-wider">Engine Security & Privacy</h4>
+                        </div>
+                        <p className="text-[11px] text-slate-650 leading-relaxed">
+                          Your conversations are encrypted and routed locally within the state government private network. Real-time NLP parsing is used to classify complaint fields automatically.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Right Column: AI Assistant Chat Interface */}
+                    <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col justify-between overflow-hidden min-h-[500px]">
+                      {/* Interface Header */}
+                      <div className="bg-slate-50 border-b border-slate-100 p-4 flex items-center justify-between shrink-0">
+                        <div className="flex items-center space-x-2.5">
+                          <div className="w-8 h-8 rounded-full bg-[#569140]/10 flex items-center justify-center text-[#569140]">
+                            <Sparkles className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-slate-900 block">CivicAI Digital Twin</span>
+                            <span className="text-[10px] text-emerald-600 font-medium flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                              Active and Synchronized
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-[10px] bg-slate-100 text-slate-500 font-bold uppercase tracking-wider px-2 py-0.5 rounded-md">
+                          Natural Language Processing
+                        </span>
+                      </div>
+
+                      {/* Chat Messages */}
+                      <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-[#F8FCF6]/30 text-xs leading-relaxed max-h-[400px] min-h-[300px]">
+                        {chatMessages.map((msg, idx) => (
+                          <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} gap-2.5`}>
+                            {msg.sender === 'bot' && (
+                              <div className="w-6 h-6 rounded-full bg-[#569140]/10 flex items-center justify-center text-[#569140] shrink-0 mt-0.5">
+                                <Sparkles className="w-3.5 h-3.5" />
+                              </div>
+                            )}
+                            <div className={`p-3.5 rounded-2xl max-w-[80%] shadow-sm ${
+                              msg.sender === 'user' 
+                                ? 'bg-[#569140] text-white rounded-tr-none' 
+                                : 'bg-white text-slate-750 border border-slate-150 rounded-tl-none'
+                            }`}>
+                              {msg.text}
+                            </div>
+                          </div>
+                        ))}
+                        {chatLoading && (
+                          <div className="flex justify-start gap-2.5">
+                            <div className="w-6 h-6 rounded-full bg-[#569140]/10 flex items-center justify-center text-[#569140] shrink-0 mt-0.5">
+                              <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+                            </div>
+                            <div className="bg-white text-slate-550 border border-slate-150 p-3 rounded-2xl rounded-tl-none flex items-center gap-2 shadow-sm font-medium">
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#569140]" />
+                              <span>Assistant is typing...</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Input Form */}
+                      <form onSubmit={handleChatSubmit} className="p-4 border-t border-slate-200 bg-slate-50 flex gap-3 shrink-0">
+                        <input 
+                          type="text"
+                          value={chatQuery}
+                          onChange={(e) => setChatQuery(e.target.value)}
+                          placeholder="Ask a question or describe a civic grievance to auto-route..."
+                          className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-[#569140] focus:ring-1 focus:ring-[#569140] shadow-inner text-slate-800"
+                        />
+                        <button 
+                          type="submit"
+                          className="bg-[#569140] hover:bg-[#437132] text-white px-5 rounded-xl flex items-center justify-center transition-colors cursor-pointer shadow-sm hover:shadow"
+                        >
+                          <Send className="w-4 h-4" />
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* OTHER TABS PLACEHOLDERS */}
-              {!['dashboard', 'lodge', 'track', 'road-explorer', 'contact-us'].includes(activeNav) && (
+              {!['dashboard', 'lodge', 'track', 'road-explorer', 'contact-us', 'ai-assistant'].includes(activeNav) && (
                 <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400 max-w-xl mx-auto shadow-sm space-y-4">
                   <Activity className="w-12 h-12 mx-auto text-blue-600" />
                   <h3 className="text-base font-bold text-slate-900 uppercase tracking-wider">
