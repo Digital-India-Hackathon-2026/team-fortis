@@ -102,6 +102,8 @@ export default function App() {
   const [citizenRating, setCitizenRating] = useState(0);
   const [citizenFeedbackText, setCitizenFeedbackText] = useState('');
   const [selectedAllocateOfficerId, setSelectedAllocateOfficerId] = useState<string>('');
+  const [selectedUpdateStatus, setSelectedUpdateStatus] = useState<string>('');
+  const [updateRemarks, setUpdateRemarks] = useState<string>('');
 
   // Voice Dictation (Web Speech API) states
   const [isListening, setIsListening] = useState(false);
@@ -618,6 +620,44 @@ export default function App() {
       }
     } catch (e) {
       showToast('Error allocating officer', 'error');
+    }
+  };
+
+  const handleUpdateStatus = async () => {
+    if (!selectedComplaintId || !currentUser) return;
+    if (!selectedUpdateStatus) {
+      showToast('Please select a progress stage', 'error');
+      return;
+    }
+    if (!updateRemarks.trim()) {
+      showToast('Please provide progress details/remarks for the citizen', 'error');
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/complaints/${selectedComplaintId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: selectedUpdateStatus,
+          remarks: updateRemarks,
+          changedById: currentUser.id,
+          changedByType: 'OFFICER'
+        })
+      });
+
+      if (res.ok) {
+        showToast('Citizen updated and progress stage updated successfully!', 'success');
+        setSelectedUpdateStatus('');
+        setUpdateRemarks('');
+        fetchComplaintDetails(selectedComplaintId);
+        fetchComplaints();
+      } else {
+        const data = await res.json();
+        showToast(data.message || 'Failed to update progress', 'error');
+      }
+    } catch (e) {
+      showToast('Error updating progress status', 'error');
     }
   };
 
@@ -1658,12 +1698,19 @@ export default function App() {
                               const complaintStatus = selectedComplaintDetails.complaint.status;
                               let statusState: 'completed' | 'current' | 'future' = 'future';
 
-                              const statusMap: Record<ComplaintStatus, number> = {
+                              const statusMap: Record<string, number> = {
                                 'Pending': 0,
+                                'PENDING': 0,
                                 'Verified': 1,
+                                'VERIFIED': 1,
                                 'In Progress': 2,
+                                'IN_PROGRESS': 2,
                                 'Resolved': 3,
-                                'Rejected': -1
+                                'RESOLVED': 3,
+                                'Validated': 4,
+                                'VALIDATED': 4,
+                                'Rejected': -1,
+                                'REJECTED': -1
                               };
 
                               const currentStatusIdx = statusMap[complaintStatus] ?? 0;
@@ -1878,6 +1925,60 @@ export default function App() {
                                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs py-2 px-3 rounded-lg transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
                               >
                                 Allocate Officer
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Update Citizen & Stage Progress (Admin/Officer Only) */}
+                        {isOfficerOrAdmin && selectedComplaintDetails.complaint.status !== 'Resolved' && selectedComplaintDetails.complaint.status !== 'Rejected' && (
+                          <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm text-xs animate-fade-in">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 pb-2 border-b border-slate-100 flex items-center gap-1.5 font-bold">
+                              <CheckCircle2 className="w-4 h-4 text-[#1e3a8a]" />
+                              Update Citizen & Stage Progress
+                            </h4>
+                            
+                            <div className="space-y-3">
+                              <p className="text-[11px] text-slate-500 leading-relaxed">
+                                Submit progress details to notify the citizen and advance the redressal flow.
+                              </p>
+
+                              <div className="space-y-1">
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                  Select Progress Stage
+                                </label>
+                                <select
+                                  value={selectedUpdateStatus}
+                                  onChange={(e) => setSelectedUpdateStatus(e.target.value)}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 focus:bg-white cursor-pointer font-medium text-slate-750"
+                                >
+                                  <option value="">-- Advance Checkpoint --</option>
+                                  <option value="VERIFIED">Stage 2: Verified (Field verified)</option>
+                                  <option value="IN_PROGRESS">Stage 3: In Progress (Action dispatched)</option>
+                                  <option value="RESOLVED">Stage 4: Resolved (Work certified)</option>
+                                  <option value="VALIDATED">Stage 5: Validated (Citizen confirmed)</option>
+                                  <option value="REJECTED">Reject Grievance</option>
+                                </select>
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                  Progress Update / Remarks
+                                </label>
+                                <textarea
+                                  value={updateRemarks}
+                                  onChange={(e) => setUpdateRemarks(e.target.value)}
+                                  placeholder="Write a message explaining what has been completed..."
+                                  rows={3}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs focus:outline-none focus:border-blue-500 focus:bg-white leading-relaxed text-slate-700 font-medium"
+                                />
+                              </div>
+
+                              <button
+                                onClick={handleUpdateStatus}
+                                className="w-full bg-[#1e3a8a] hover:bg-blue-900 text-white font-extrabold text-xs py-2 px-3 rounded-lg transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
+                              >
+                                Update Citizen & Stage
                               </button>
                             </div>
                           </div>
