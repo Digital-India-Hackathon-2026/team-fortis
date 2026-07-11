@@ -1639,22 +1639,7 @@ export default function App() {
                         )}
                       </div>
 
-                      {/* Emergency Hotline */}
-                      <div className="bg-red-50 border border-red-200 rounded-2xl p-5 space-y-3">
-                        <div className="flex items-center space-x-2 text-red-900 font-bold">
-                          <AlertTriangle className="w-5 h-5 text-red-600" />
-                          <h4 className="text-xs uppercase tracking-wider">{t("lodge.emergency.title")}</h4>
-                        </div>
-                        <p className="text-[11px] text-red-800 leading-relaxed">
-                          {t("lodge.emergency.desc")}
-                        </p>
-                        <a 
-                          href="tel:100" 
-                          className="w-full bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs py-2 px-3 rounded-lg transition inline-flex items-center justify-center gap-1.5"
-                        >
-                          <Phone className="w-4 h-4" /> {t("lodge.emergency.btn")}
-                        </a>
-                      </div>
+
 
                       {/* Action Triggers */}
                       <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3 shadow-sm">
