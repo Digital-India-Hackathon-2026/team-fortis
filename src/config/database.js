@@ -17,12 +17,70 @@ if (fs.existsSync(DB_FILE_PATH)) {
   }
 }
 
+let isSupabaseSynced = false;
+let lastSyncedTime = 0;
+
+async function uploadToSupabase(data) {
+  const SUPABASE_URL = process.env.SUPABASE_URL;
+  const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!SUPABASE_URL || !SUPABASE_KEY) return;
+  try {
+    await fetch(`${SUPABASE_URL}/storage/v1/object/mock-db/mock_db.json`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'apikey': SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        'x-upsert': 'true'
+      },
+      body: JSON.stringify(data)
+    });
+  } catch (err) {
+    console.error('[MockDB] Failed to upload database to Supabase:', err);
+  }
+}
+
+export async function ensureDbLoaded() {
+  const now = Date.now();
+  if (isSupabaseSynced && (now - lastSyncedTime < 10000)) {
+    return;
+  }
+  
+  const SUPABASE_URL = process.env.SUPABASE_URL;
+  const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (SUPABASE_URL && SUPABASE_KEY) {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/storage/v1/object/mock-db/mock_db.json`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'apikey': SUPABASE_KEY
+        }
+      });
+      if (res.status === 200) {
+        const remoteDb = await res.json();
+        if (remoteDb && remoteDb.users && remoteDb.complaints) {
+          db = remoteDb;
+          isSupabaseSynced = true;
+          lastSyncedTime = now;
+          console.log('[MockDB] Sync succeeded. Loaded remote database.');
+          return;
+        }
+      }
+    } catch (err) {
+      console.error('[MockDB] Failed to sync database with Supabase:', err);
+    }
+  }
+}
+
 export function saveToDisk() {
   try {
     fs.writeFileSync(DB_FILE_PATH, JSON.stringify(db, null, 2), 'utf-8');
   } catch (err) {
     console.error('Error writing to mock_db.json:', err);
   }
+  uploadToSupabase(db).catch(console.error);
 }
 
 if (!db) {
@@ -376,18 +434,21 @@ class MockModel {
   }
 
   async findUnique(args) {
+    await ensureDbLoaded();
     const item = this.list.find(i => matches(i, args?.where));
     if (!item) return null;
     return loadRelations(item, this.modelName, args?.include);
   }
 
   async findFirst(args) {
+    await ensureDbLoaded();
     const item = this.list.find(i => matches(i, args?.where));
     if (!item) return null;
     return loadRelations(item, this.modelName, args?.include);
   }
 
   async findMany(args) {
+    await ensureDbLoaded();
     let result = this.list.filter(i => matches(i, args?.where));
 
     if (args?.orderBy) {
@@ -414,6 +475,7 @@ class MockModel {
   }
 
   async create(args) {
+    await ensureDbLoaded();
     const id = Math.random().toString(36).substring(2) + Date.now().toString(36);
     const newItem = {
       id,
@@ -427,6 +489,7 @@ class MockModel {
   }
 
   async createMany(args) {
+    await ensureDbLoaded();
     const dataList = Array.isArray(args.data) ? args.data : [args.data];
     const created = [];
     for (const d of dataList) {
@@ -445,6 +508,7 @@ class MockModel {
   }
 
   async update(args) {
+    await ensureDbLoaded();
     const index = this.list.findIndex(i => matches(i, args?.where));
     if (index === -1) {
       throw new Error(`Record to update not found.`);
@@ -461,6 +525,7 @@ class MockModel {
   }
 
   async delete(args) {
+    await ensureDbLoaded();
     const index = this.list.findIndex(i => matches(i, args?.where));
     if (index === -1) {
       throw new Error(`Record to delete not found.`);
@@ -471,6 +536,7 @@ class MockModel {
   }
 
   async deleteMany(args) {
+    await ensureDbLoaded();
     const originalCount = this.list.length;
     this.list = this.list.filter(i => !matches(i, args?.where));
     saveToDisk();
@@ -478,10 +544,12 @@ class MockModel {
   }
 
   async count(args) {
+    await ensureDbLoaded();
     return this.list.filter(i => matches(i, args?.where)).length;
   }
 
   async groupBy(args) {
+    await ensureDbLoaded();
     const groups = {};
     const filtered = this.list.filter(i => matches(i, args?.where));
     for (const item of filtered) {
