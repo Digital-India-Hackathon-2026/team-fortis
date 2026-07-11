@@ -1210,40 +1210,13 @@ export default function App() {
                     {/* Sidebar components */}
                     <div className="lg:col-span-4 space-y-6">
                       
-                      {/* AI Insights Card */}
-                      <div className="bg-[#EEF8E8] border border-[#D6E9CB] rounded-[18px] p-5 space-y-4">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold tracking-widest text-[#2E5A2E] uppercase flex items-center gap-1.5">
-                            <Sparkles className="w-3.5 h-3.5 text-[#6FB555] animate-pulse" /> {t("dashboard.ai.title")}
-                          </span>
-                          <span className="bg-[#D8B34B] text-[10px] font-bold text-white px-2.5 py-0.5 rounded">
-                            {t("dashboard.ai.confidence")}: 94%
-                          </span>
-                        </div>
-                        <div className="flex gap-3">
-                          <AlertTriangle className="w-12 h-12 text-[#D8B34B] shrink-0 mt-0.5" />
-                          <div>
-                            <h4 className="text-xs font-bold text-[#2E5A2E]">{t("dashboard.ai.alertTitle")}</h4>
-                            <p className="text-[11px] text-[#4A5C4A] mt-1 leading-relaxed">
-                              {t("dashboard.ai.alertDesc")}
-                            </p>
-                          </div>
-                        </div>
-                        <button 
-                          onClick={() => setActiveNav('road-explorer')}
-                          className="w-full bg-[#6FB555] hover:bg-[#569140] text-white font-bold text-xs py-2.5 px-3 rounded-[12px] transition cursor-pointer"
-                        >
-                          View GIS Grid
-                        </button>
-                      </div>
-
                       {/* Nearby Map Card */}
                       <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3.5 shadow-sm">
                         <div className="flex justify-between items-center">
                           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">{t("dashboard.map.title")}</h4>
                           <span className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">{t("dashboard.map.badge")}</span>
                         </div>
-                        <div className="h-48 rounded-lg overflow-hidden border border-slate-100 relative">
+                        <div className="h-[460px] rounded-lg overflow-hidden border border-slate-100 relative">
                           <InteractiveMap 
                             complaints={complaints}
                             selectedComplaintId={selectedComplaintId}
