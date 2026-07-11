@@ -44,6 +44,7 @@ export default function App() {
   
   // Navigation
   const [activeNav, setActiveNav] = useState<'dashboard' | 'lodge' | 'my-complaints' | 'track' | 'road-explorer' | 'ward-health' | 'ai-assistant' | 'notifications' | 'contact-us' | 'officer-management' | 'my-profile'>('dashboard');
+  const [landingTab, setLandingTab] = useState<'home' | 'about-us' | 'features' | 'how-it-works' | 'departments' | 'contact'>('home');
   const [selectedComplaintId, setSelectedComplaintId] = useState<string | null>(null);
   const [selectedComplaintDetails, setSelectedComplaintDetails] = useState<{ complaint: Complaint, history: any[] } | null>(null);
   
@@ -2544,15 +2545,18 @@ export default function App() {
                 { label: t("landing.nav.how"), path: "how-it-works" },
                 { label: t("landing.nav.depts"), path: "departments" },
                 { label: t("landing.nav.contact"), path: "contact" }
-              ].map((link, idx) => (
-                <a 
-                  key={idx} 
-                  href={`#${link.path}`} 
-                  className={`text-sm font-semibold hover:text-[#569140] transition ${idx === 0 ? 'text-[#569140] border-b-2 border-[#569140] pb-1' : 'text-[#5F6B63]'}`}
-                >
-                  {link.label}
-                </a>
-              ))}
+              ].map((link, idx) => {
+                const isActive = landingTab === link.path;
+                return (
+                  <button 
+                    key={idx} 
+                    onClick={() => setLandingTab(link.path as any)} 
+                    className={`text-sm font-semibold hover:text-[#569140] transition cursor-pointer pb-1 ${isActive ? 'text-[#569140] border-b-2 border-[#569140]' : 'text-[#5F6B63]'}`}
+                  >
+                    {link.label}
+                  </button>
+                );
+              })}
             </nav>
 
              <div className="flex items-center gap-4">
@@ -2595,109 +2599,346 @@ export default function App() {
           </header>
 
           {/* Hero Section Container */}
-          <main className="flex-1 flex flex-col justify-between">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center px-6 md:px-12 py-12 relative overflow-hidden">
-              
-              {/* Left Column Text Content */}
-              <div className="lg:col-span-6 space-y-6 z-10 max-w-xl">
-                <span className="bg-[#EEF8E8] text-[#437132] border border-[#C9DEBE] px-3.5 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider inline-block">
-                  {t("landing.hero.badge")}
-                </span>
-                
-                <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight text-[#27322B]">
-                  {t("landing.hero.title")}<br />
-                  <span className="text-[#569140]">{t("landing.hero.titleGreen")}</span>
-                </h1>
-                
-                <p className="text-sm md:text-base text-[#5F6B63] leading-relaxed font-medium">
-                  {t("landing.hero.desc")}
-                </p>
+          <main className="flex-1 flex flex-col justify-between py-6">
+            
+            {landingTab === 'home' && (
+              <>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center px-6 md:px-12 py-12 relative overflow-hidden">
+                  {/* Left Column Text Content */}
+                  <div className="lg:col-span-6 space-y-6 z-10 max-w-xl">
+                    <span className="bg-[#EEF8E8] text-[#437132] border border-[#C9DEBE] px-3.5 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider inline-block">
+                      {t("landing.hero.badge")}
+                    </span>
+                    
+                    <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight text-[#27322B]">
+                      {t("landing.hero.title")}<br />
+                      <span className="text-[#569140]">{t("landing.hero.titleGreen")}</span>
+                    </h1>
+                    
+                    <p className="text-sm md:text-base text-[#5F6B63] leading-relaxed font-medium">
+                      {t("landing.hero.desc")}
+                    </p>
 
-                <div className="flex flex-wrap gap-4 pt-2">
-                  <button 
-                    onClick={() => { setActiveView('login'); setAuthMode('login'); }}
-                    className="bg-[#569140] hover:bg-[#437132] text-white font-extrabold text-sm px-6 py-3.5 rounded-[12px] shadow-md transition cursor-pointer flex items-center gap-2"
-                  >
-                    <FileEdit className="w-4 h-4" />
-                    {t("landing.hero.btnLodge")}
-                  </button>
-                  <button 
-                    onClick={() => { setActiveView('login'); setAuthMode('login'); }}
-                    className="bg-white border border-[#E3ECD9] hover:bg-[#F5FAF2] text-[#27322B] font-extrabold text-sm px-6 py-3.5 rounded-[12px] shadow-sm transition cursor-pointer flex items-center gap-2"
-                  >
-                    <Activity className="w-4 h-4 text-[#569140]" />
-                    {t("landing.hero.btnTrack")}
-                  </button>
-                </div>
+                    <div className="flex flex-wrap gap-4 pt-2">
+                      <button 
+                        onClick={() => { setActiveView('login'); setAuthMode('login'); }}
+                        className="bg-[#569140] hover:bg-[#437132] text-white font-extrabold text-sm px-6 py-3.5 rounded-[12px] shadow-md transition cursor-pointer flex items-center gap-2"
+                      >
+                        <FileEdit className="w-4 h-4" />
+                        {t("landing.hero.btnLodge")}
+                      </button>
+                      <button 
+                        onClick={() => { setActiveView('login'); setAuthMode('login'); }}
+                        className="bg-white border border-[#E3ECD9] hover:bg-[#F5FAF2] text-[#27322B] font-extrabold text-sm px-6 py-3.5 rounded-[12px] shadow-sm transition cursor-pointer flex items-center gap-2"
+                      >
+                        <Activity className="w-4 h-4 text-[#569140]" />
+                        {t("landing.hero.btnTrack")}
+                      </button>
+                    </div>
 
-                {/* Social Proof Avatars */}
-                <div className="flex items-center gap-3 pt-4 border-t border-[#EDF2EA]">
-                  <div className="flex -space-x-2">
-                    <img className="inline-block h-8 w-8 rounded-full ring-2 ring-white" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Avatar 1" />
-                    <img className="inline-block h-8 w-8 rounded-full ring-2 ring-white" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Avatar 2" />
-                    <img className="inline-block h-8 w-8 rounded-full ring-2 ring-white" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Avatar 3" />
-                    <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-[#569140] flex items-center justify-center text-[10px] text-white font-extrabold">2K+</div>
+                    {/* Social Proof Avatars */}
+                    <div className="flex items-center gap-3 pt-4 border-t border-[#EDF2EA]">
+                      <div className="flex -space-x-2">
+                        <img className="inline-block h-8 w-8 rounded-full ring-2 ring-white" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Avatar 1" />
+                        <img className="inline-block h-8 w-8 rounded-full ring-2 ring-white" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Avatar 2" />
+                        <img className="inline-block h-8 w-8 rounded-full ring-2 ring-white" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Avatar 3" />
+                        <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-[#569140] flex items-center justify-center text-[10px] text-white font-extrabold">2K+</div>
+                      </div>
+                      <span className="text-xs text-[#5F6B63] font-semibold">{t("landing.hero.social")}</span>
+                    </div>
                   </div>
-                  <span className="text-xs text-[#5F6B63] font-semibold">{t("landing.hero.social")}</span>
+
+                  {/* Right Column: Charminar Image */}
+                  <div className="lg:col-span-6 relative h-[320px] lg:h-[450px] rounded-2xl overflow-hidden shadow-sm border border-[#EDF2EA]">
+                    <img 
+                      src={charminarHero} 
+                      alt="Hyderabad Heritage Charminar" 
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#FCFDFB] via-[#FCFDFB]/40 to-transparent" />
+                  </div>
                 </div>
-              </div>
 
-              {/* Right Column: Charminar Image */}
-              <div className="lg:col-span-6 relative h-[320px] lg:h-[450px] rounded-2xl overflow-hidden shadow-sm border border-[#EDF2EA]">
-                <img 
-                  src={charminarHero} 
-                  alt="Hyderabad Heritage Charminar" 
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#FCFDFB] via-[#FCFDFB]/40 to-transparent" />
-              </div>
-            </div>
+                {/* Features Container */}
+                <div className="px-6 md:px-12 pb-12">
+                  <div className="bg-white border border-[#E3ECD9] rounded-[24px] p-8 shadow-sm space-y-8">
+                    <div className="text-center space-y-2">
+                      <span className="text-[11px] text-[#569140] font-extrabold uppercase tracking-widest block">{t("landing.features.badge")}</span>
+                      <h2 className="text-2xl font-black text-[#27322B] tracking-tight">{t("landing.features.title")}</h2>
+                      <div className="w-12 h-1 bg-[#569140] mx-auto rounded-full mt-2" />
+                    </div>
 
-            {/* Features Container */}
-            <div className="px-6 md:px-12 pb-12">
-              <div className="bg-white border border-[#E3ECD9] rounded-[24px] p-8 shadow-sm space-y-8">
-                <div className="text-center space-y-2">
-                  <span className="text-[11px] text-[#569140] font-extrabold uppercase tracking-widest block">{t("landing.features.badge")}</span>
-                  <h2 className="text-2xl font-black text-[#27322B] tracking-tight">{t("landing.features.title")}</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+                      {[
+                        { title: 'Easy Reporting', desc: 'Report issues in seconds with photo, location and easy steps.', icon: Camera, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { title: 'AI Verification', desc: 'AI verifies and categorizes complaints for faster processing.', icon: Sparkles, color: 'text-[#569140]', bg: 'bg-[#EEF8E8]' },
+                        { title: 'Real-time Tracking', desc: 'Track your complaint status in real-time, every step of the way.', icon: MapPin, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { title: 'Right Department', desc: 'Automatically assign to the right department for faster resolution.', icon: Building2, color: 'text-cyan-600', bg: 'bg-cyan-50' },
+                        { title: 'GIS Mapping', desc: 'Explore live, color-coded interactive mapping of all registered complaints.', icon: Compass, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                        { title: 'Transparency', desc: 'Transparent system with analytics and public insights.', icon: BarChart3, color: 'text-[#569140]', bg: 'bg-[#EEF8E8]' }
+                      ].map((feat, idx) => {
+                        const Icon = feat.icon;
+                        return (
+                          <div key={idx} className="border border-[#EDF2EA] rounded-xl p-5 hover:shadow-md hover:border-[#C9DEBE] transition duration-200 flex flex-col justify-start text-center space-y-3 bg-[#FCFDFB]">
+                            <div className={`w-10 h-10 rounded-lg ${feat.bg} flex items-center justify-center mx-auto shrink-0`}>
+                              <Icon className={`w-5 h-5 ${feat.color}`} />
+                            </div>
+                            <h4 className="font-bold text-xs text-[#27322B]">{feat.title}</h4>
+                            <p className="text-[10px] text-[#5F6B63] leading-relaxed font-medium">{feat.desc}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="bg-[#F8FCF6] border border-[#E3ECD9] rounded-xl p-4 flex flex-wrap justify-between items-center gap-4 text-xs font-bold text-[#5F6B63]">
+                      <div className="flex items-center gap-2 text-[#437132]">
+                        <CheckCircle className="w-4 h-4 text-[#569140]" />
+                        {t("landing.features.footer")}
+                      </div>
+                      <div className="flex items-center gap-6">
+                        <span className="flex items-center gap-1.5"><Shield className="w-4 h-4 text-[#569140]" /> {t("landing.trust.secure")}</span>
+                        <span className="flex items-center gap-1.5"><Activity className="w-4 h-4 text-[#569140]" /> {t("landing.trust.trans")}</span>
+                        <span className="flex items-center gap-1.5"><Award className="w-4 h-4 text-[#569140]" /> {t("landing.trust.acc")}</span>
+                        <span className="flex items-center gap-1.5"><Sparkles className="w-4 h-4 text-[#569140]" /> {t("landing.trust.ai")}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* ABOUT US TAB */}
+            {landingTab === 'about-us' && (
+              <div className="px-6 md:px-12 max-w-4xl mx-auto py-8 space-y-6 text-[#27322B] animate-fade-in">
+                <div className="text-center space-y-2 mb-8">
+                  <span className="text-[11px] text-[#569140] font-extrabold uppercase tracking-widest block">About CiviqAI</span>
+                  <h2 className="text-3xl font-black tracking-tight">Our Mission & Vision</h2>
                   <div className="w-12 h-1 bg-[#569140] mx-auto rounded-full mt-2" />
                 </div>
+                
+                <div className="bg-white border border-[#E3ECD9] rounded-[24px] p-8 shadow-sm space-y-6">
+                  <p className="text-sm leading-relaxed text-[#5F6B63]">
+                    CiviqAI is a state-of-the-art municipal grievance redressal network developed to transform public administration across India. Born under the **Digital India Redressal Initiative**, our platform harnesses geolocated mapping and artificial intelligence to bridge the gap between citizens and local authorities.
+                  </p>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
-                  {[
-                    { title: 'Easy Reporting', desc: 'Report issues in seconds with photo, location and easy steps.', icon: Camera, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                    { title: 'AI Verification', desc: 'AI verifies and categorizes complaints for faster processing.', icon: Sparkles, color: 'text-[#569140]', bg: 'bg-[#EEF8E8]' },
-                    { title: 'Real-time Tracking', desc: 'Track your complaint status in real-time, every step of the way.', icon: MapPin, color: 'text-amber-600', bg: 'bg-amber-50' },
-                    { title: 'Right Department', desc: 'Automatically assign to the right department for faster resolution.', icon: Building2, color: 'text-cyan-600', bg: 'bg-cyan-50' },
-                    { title: 'GIS Mapping', desc: 'Explore live, color-coded interactive mapping of all registered complaints.', icon: Compass, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-                    { title: 'Transparency', desc: 'Transparent system with analytics and public insights.', icon: BarChart3, color: 'text-[#569140]', bg: 'bg-[#EEF8E8]' }
-                  ].map((feat, idx) => {
-                    const Icon = feat.icon;
-                    return (
-                      <div key={idx} className="border border-[#EDF2EA] rounded-xl p-5 hover:shadow-md hover:border-[#C9DEBE] transition duration-200 flex flex-col justify-start text-center space-y-3 bg-[#FCFDFB]">
-                        <div className={`w-10 h-10 rounded-lg ${feat.bg} flex items-center justify-center mx-auto shrink-0`}>
-                          <Icon className={`w-5 h-5 ${feat.color}`} />
-                        </div>
-                        <h4 className="font-bold text-xs text-[#27322B]">{feat.title}</h4>
-                        <p className="text-[10px] text-[#5F6B63] leading-relaxed font-medium">{feat.desc}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="bg-[#F8FCF6] border border-[#E3ECD9] rounded-xl p-4 flex flex-wrap justify-between items-center gap-4 text-xs font-bold text-[#5F6B63]">
-                  <div className="flex items-center gap-2 text-[#437132]">
-                    <CheckCircle className="w-4 h-4 text-[#569140]" />
-                    {t("landing.features.footer")}
-                  </div>
-                  <div className="flex items-center gap-6">
-                    <span className="flex items-center gap-1.5"><Shield className="w-4 h-4 text-[#569140]" /> {t("landing.trust.secure")}</span>
-                    <span className="flex items-center gap-1.5"><Activity className="w-4 h-4 text-[#569140]" /> {t("landing.trust.trans")}</span>
-                    <span className="flex items-center gap-1.5"><Award className="w-4 h-4 text-[#569140]" /> {t("landing.trust.acc")}</span>
-                    <span className="flex items-center gap-1.5"><Sparkles className="w-4 h-4 text-[#569140]" /> {t("landing.trust.ai")}</span>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-sm text-[#437132]">🚀 Our Vision</h4>
+                      <p className="text-[11px] text-[#5F6B63] leading-relaxed">
+                        To construct a transparent, frictionless, and highly accountable civic workflow where grievances are addressed promptly and accurately.
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-sm text-[#437132]">🤖 AI-Powered Triage</h4>
+                      <p className="text-[11px] text-[#5F6B63] leading-relaxed">
+                        We deploy state-of-the-art Natural Language Processing (NLP) models to predict complaint categories, estimate urgency levels, and allocate tickets instantly.
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-sm text-[#437132]">🗺️ GIS Mapping Control</h4>
+                      <p className="text-[11px] text-[#5F6B63] leading-relaxed">
+                        Our centralized GIS dashboard maps public grievances dynamically, empowering local authorities to discover hotspot sectors and manage allocations logically.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* FEATURES TAB */}
+            {landingTab === 'features' && (
+              <div className="px-6 md:px-12 max-w-4xl mx-auto py-8 space-y-6 text-[#27322B] animate-fade-in">
+                <div className="text-center space-y-2 mb-8">
+                  <span className="text-[11px] text-[#569140] font-extrabold uppercase tracking-widest block">System Features</span>
+                  <h2 className="text-3xl font-black tracking-tight">Innovative Redressal Engineering</h2>
+                  <div className="w-12 h-1 bg-[#569140] mx-auto rounded-full mt-2" />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-white border border-[#E3ECD9] rounded-2xl p-6 shadow-sm space-y-3">
+                    <div className="w-9 h-9 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center">
+                      <MapPin className="w-5 h-5" />
+                    </div>
+                    <h4 className="font-bold text-sm">Widescreen Leaflet GIS Mapping</h4>
+                    <p className="text-xs text-[#5F6B63] leading-relaxed">
+                      A premium, full-width Leaflet map widget styled with Dark Matter vectors. Select coordinates directly with Nominatim-powered reverse geocoding.
+                    </p>
+                  </div>
+
+                  <div className="bg-white border border-[#E3ECD9] rounded-2xl p-6 shadow-sm space-y-3">
+                    <div className="w-9 h-9 bg-[#EEF8E8] text-[#569140] rounded-lg flex items-center justify-center">
+                      <Sparkles className="w-5 h-5" />
+                    </div>
+                    <h4 className="font-bold text-sm">AI Auto-Routing Summaries</h4>
+                    <p className="text-xs text-[#5F6B63] leading-relaxed">
+                      Automated classification systems extract tags, analyze priority levels, and draft contextual executive summaries to minimize manual overhead.
+                    </p>
+                  </div>
+
+                  <div className="bg-white border border-[#E3ECD9] rounded-2xl p-6 shadow-sm space-y-3">
+                    <div className="w-9 h-9 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
+                      <Activity className="w-5 h-5" />
+                    </div>
+                    <h4 className="font-bold text-sm">5-Checkpoint Stepper Lines</h4>
+                    <p className="text-xs text-[#5F6B63] leading-relaxed">
+                      Visual status tracking systems connecting each stage (Verified, In Progress, etc.) with dynamic color segments that illuminate as work moves forward.
+                    </p>
+                  </div>
+
+                  <div className="bg-white border border-[#E3ECD9] rounded-2xl p-6 shadow-sm space-y-3">
+                    <div className="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center">
+                      <Phone className="w-5 h-5" />
+                    </div>
+                    <h4 className="font-bold text-sm">Direct Support Directories</h4>
+                    <p className="text-xs text-[#5F6B63] leading-relaxed">
+                      Instant links to central command lines and individual division HOD emails, phone lines, and SLA expectations for direct transparency.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* HOW IT WORKS TAB */}
+            {landingTab === 'how-it-works' && (
+              <div className="px-6 md:px-12 max-w-4xl mx-auto py-8 space-y-6 text-[#27322B] animate-fade-in">
+                <div className="text-center space-y-2 mb-8">
+                  <span className="text-[11px] text-[#569140] font-extrabold uppercase tracking-widest block">Workflow Lifecyle</span>
+                  <h2 className="text-3xl font-black tracking-tight">How Redressal Works</h2>
+                  <div className="w-12 h-1 bg-[#569140] mx-auto rounded-full mt-2" />
+                </div>
+                
+                <div className="bg-white border border-[#E3ECD9] rounded-[24px] p-8 shadow-sm space-y-8">
+                  <div className="relative border-l-2 border-[#E3ECD9] pl-6 ml-4 space-y-8 text-xs text-[#5F6B63]">
+                    <div className="relative">
+                      <div className="absolute -left-[35px] w-6 h-6 rounded-full bg-[#569140] text-white flex items-center justify-center font-bold text-[10px] shadow">1</div>
+                      <h4 className="font-bold text-sm text-[#27322B] mb-1">Citizen Lodging</h4>
+                      <p className="leading-relaxed">The citizen records details, selects the ward, and pins the defect location on our widescreen Leaflet map.</p>
+                    </div>
+
+                    <div className="relative">
+                      <div className="absolute -left-[35px] w-6 h-6 rounded-full bg-[#569140] text-white flex items-center justify-center font-bold text-[10px] shadow">2</div>
+                      <h4 className="font-bold text-sm text-[#27322B] mb-1">AI Classification</h4>
+                      <p className="leading-relaxed">Our backend NLP models evaluate the text to set predicted severity levels, map keywords, and recommend a department.</p>
+                    </div>
+
+                    <div className="relative">
+                      <div className="absolute -left-[35px] w-6 h-6 rounded-full bg-[#569140] text-white flex items-center justify-center font-bold text-[10px] shadow">3</div>
+                      <h4 className="font-bold text-sm text-[#27322B] mb-1">Admin Allocation</h4>
+                      <p className="leading-relaxed">The department head reviews the complaint details on their dashboard, selecting and dispatching an active field officer.</p>
+                    </div>
+
+                    <div className="relative">
+                      <div className="absolute -left-[35px] w-6 h-6 rounded-full bg-[#569140] text-white flex items-center justify-center font-bold text-[10px] shadow">4</div>
+                      <h4 className="font-bold text-sm text-[#27322B] mb-1">Field Updates & Stepper Progression</h4>
+                      <p className="leading-relaxed">The assigned field officer provides comments and increments the ticket stages, turning the stepper connector lines dark blue.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* DEPARTMENTS TAB */}
+            {landingTab === 'departments' && (
+              <div className="px-6 md:px-12 max-w-4xl mx-auto py-8 space-y-6 text-[#27322B] animate-fade-in">
+                <div className="text-center space-y-2 mb-8">
+                  <span className="text-[11px] text-[#569140] font-extrabold uppercase tracking-widest block">Municipal Divisions</span>
+                  <h2 className="text-3xl font-black tracking-tight">Our Core Departments</h2>
+                  <div className="w-12 h-1 bg-[#569140] mx-auto rounded-full mt-2" />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Roads & Infrastructure */}
+                  <div className="bg-white border border-[#E3ECD9] rounded-2xl p-6 shadow-sm hover:shadow-md transition space-y-3">
+                    <div className="flex items-center gap-2 text-amber-600">
+                      <Building2 className="w-5 h-5" />
+                      <h4 className="font-bold text-sm text-[#27322B]">Roads & Infrastructure</h4>
+                    </div>
+                    <p className="text-xs text-[#5F6B63] leading-relaxed">
+                      Handles pothole repairs, street pavement defects, traffic barrier restorations, and structural corridor maintenance.
+                    </p>
+                    <p className="text-[10px] text-amber-600 font-extrabold uppercase tracking-wider bg-amber-50 px-2 py-0.5 rounded inline-block">SLA: 24 - 48 Hours</p>
+                  </div>
+
+                  {/* Solid Waste & Sanitation */}
+                  <div className="bg-white border border-[#E3ECD9] rounded-2xl p-6 shadow-sm hover:shadow-md transition space-y-3">
+                    <div className="flex items-center gap-2 text-emerald-600">
+                      <Activity className="w-5 h-5" />
+                      <h4 className="font-bold text-sm text-[#27322B]">Solid Waste & Sanitation</h4>
+                    </div>
+                    <p className="text-xs text-[#5F6B63] leading-relaxed">
+                      Responsible for clearing public garbage heaps, regular waste transport schedules, and municipal hygiene.
+                    </p>
+                    <p className="text-[10px] text-emerald-600 font-extrabold uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded inline-block">SLA: 12 - 24 Hours</p>
+                  </div>
+
+                  {/* Water Supply & Sewerage */}
+                  <div className="bg-white border border-[#E3ECD9] rounded-2xl p-6 shadow-sm hover:shadow-md transition space-y-3">
+                    <div className="flex items-center gap-2 text-blue-600">
+                      <Droplet className="w-5 h-5" />
+                      <h4 className="font-bold text-sm text-[#27322B]">Water Supply & Sewerage</h4>
+                    </div>
+                    <p className="text-xs text-[#5F6B63] leading-relaxed">
+                      Deals with underground water pipeline cracks, muddy water reports, municipal drainage leaks, and sewage overflows.
+                    </p>
+                    <p className="text-[10px] text-blue-600 font-extrabold uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded inline-block">SLA: 24 Hours</p>
+                  </div>
+
+                  {/* Electricity & Streetlights */}
+                  <div className="bg-white border border-[#E3ECD9] rounded-2xl p-6 shadow-sm hover:shadow-md transition space-y-3">
+                    <div className="flex items-center gap-2 text-indigo-600">
+                      <Zap className="w-5 h-5" />
+                      <h4 className="font-bold text-sm text-[#27322B]">Electricity & Streetlights</h4>
+                    </div>
+                    <p className="text-xs text-[#5F6B63] leading-relaxed">
+                      Handles broken electrical wire poles, flickering grids, public streetlight arrays, and hazard reports.
+                    </p>
+                    <p className="text-[10px] text-indigo-600 font-extrabold uppercase tracking-wider bg-indigo-50 px-2 py-0.5 rounded inline-block">SLA: 4 - 12 Hours</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* CONTACT TAB */}
+            {landingTab === 'contact' && (
+              <div className="px-6 md:px-12 max-w-4xl mx-auto py-8 space-y-6 text-[#27322B] animate-fade-in">
+                <div className="text-center space-y-2 mb-8">
+                  <span className="text-[11px] text-[#569140] font-extrabold uppercase tracking-widest block">Contact Directory</span>
+                  <h2 className="text-3xl font-black tracking-tight">Municipal Helplines</h2>
+                  <div className="w-12 h-1 bg-[#569140] mx-auto rounded-full mt-2" />
+                </div>
+                
+                <div className="bg-white border border-[#E3ECD9] rounded-[24px] p-8 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-sm text-[#437132] uppercase tracking-wider">Central Redressal Hotlines</h4>
+                    <p className="text-xs text-[#5F6B63] leading-relaxed">
+                      Reach out directly to central command stations for active hazard declarations.
+                    </p>
+                    <div className="space-y-3 text-xs text-[#5F6B63]">
+                      <div className="flex items-center gap-2.5">
+                        <Phone className="w-4 h-4 text-[#569140]" />
+                        <span>GHMC Command helpline: <a href="tel:21111111" className="font-bold text-[#27322B] hover:text-[#569140]">040-21111111</a></span>
+                      </div>
+                      <div className="flex items-center gap-2.5">
+                        <Phone className="w-4 h-4 text-[#569140]" />
+                        <span>State Secretariat: <a href="tel:1100" className="font-bold text-[#27322B] hover:text-[#569140]">1100 / 1800-425-5372</a></span>
+                      </div>
+                      <div className="flex items-center gap-2.5">
+                        <MessageSquare className="w-4 h-4 text-[#569140]" />
+                        <span>WhatsApp Grievances: <a href="https://wa.me/919154114999" target="_blank" rel="noopener noreferrer" className="font-bold text-[#27322B] hover:text-[#569140]">+91 91541 14999</a></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#F8FCF6] border border-[#E3ECD9] rounded-xl p-5 space-y-3 flex flex-col justify-center">
+                    <h5 className="font-bold text-xs text-[#437132] uppercase tracking-wider">Help Desk Operations</h5>
+                    <p className="text-[11px] text-[#5F6B63] leading-relaxed">
+                      Our call centers operate 24 hours a day, 7 days a week. Physical document filings are accepted at the Secretariat command center from 10:00 AM to 5:00 PM on business days.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </main>
         </div>
       ) : (
