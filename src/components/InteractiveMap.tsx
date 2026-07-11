@@ -24,13 +24,20 @@ const HYDERABAD_CENTER: [number, number] = [17.3850, 78.4867];
 
 // Helper to get category colors
 const getCategoryColor = (category: string) => {
-  switch (category) {
-    case 'Road Infrastructure': return '#f59e0b'; // amber
-    case 'Solid Waste & Sanitation': return '#10b981'; // emerald
-    case 'Water Supply & Sewerage': return '#3b82f6'; // blue
-    case 'Electricity & Streetlights': return '#6366f1'; // indigo
-    default: return '#94a3b8'; // slate
+  const cat = (category || '').toLowerCase();
+  if (cat.includes('road') || cat.includes('hazard') || cat.includes('infrastructure')) {
+    return '#f59e0b'; // amber
   }
+  if (cat.includes('waste') || cat.includes('sanitation') || cat.includes('garbage')) {
+    return '#10b981'; // emerald
+  }
+  if (cat.includes('water') || cat.includes('sewer') || cat.includes('drain') || cat.includes('sewage')) {
+    return '#3b82f6'; // blue
+  }
+  if (cat.includes('electricity') || cat.includes('streetlight') || cat.includes('power') || cat.includes('electric')) {
+    return '#6366f1'; // indigo
+  }
+  return '#94a3b8'; // slate
 };
 
 const getSeverityColor = (severity?: string) => {
