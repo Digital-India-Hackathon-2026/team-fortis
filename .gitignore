@@ -35,3 +35,4 @@ scratch/
 # Cloudflare and build outputs
 dist/
 .wrangler/
+.vercel
